@@ -1,0 +1,255 @@
+/* Color Tokens Light Theme */
+:root,
+:root[data-theme='light'] {
+  --unqops-elements-borderColor: theme('colors.alpha.gray.10');
+  --unqops-elements-borderColorActive: theme('colors.accent.600');
+
+  --unqops-elements-bg-depth-1: theme('colors.white');
+  --unqops-elements-bg-depth-2: theme('colors.gray.50');
+  --unqops-elements-bg-depth-3: theme('colors.gray.200');
+  --unqops-elements-bg-depth-4: theme('colors.alpha.gray.5');
+
+  --unqops-elements-textPrimary: theme('colors.gray.950');
+  --unqops-elements-textSecondary: theme('colors.gray.600');
+  --unqops-elements-textTertiary: theme('colors.gray.500');
+
+  --unqops-elements-code-background: theme('colors.gray.100');
+  --unqops-elements-code-text: theme('colors.gray.950');
+
+  --unqops-elements-button-primary-background: theme('colors.alpha.accent.10');
+  --unqops-elements-button-primary-backgroundHover: theme('colors.alpha.accent.20');
+  --unqops-elements-button-primary-text: theme('colors.accent.500');
+
+  --unqops-elements-button-secondary-background: theme('colors.alpha.gray.5');
+  --unqops-elements-button-secondary-backgroundHover: theme('colors.alpha.gray.10');
+  --unqops-elements-button-secondary-text: theme('colors.gray.950');
+
+  --unqops-elements-button-danger-background: theme('colors.alpha.red.10');
+  --unqops-elements-button-danger-backgroundHover: theme('colors.alpha.red.20');
+  --unqops-elements-button-danger-text: theme('colors.red.500');
+
+  --unqops-elements-item-contentDefault: theme('colors.alpha.gray.50');
+  --unqops-elements-item-contentActive: theme('colors.gray.950');
+  --unqops-elements-item-contentAccent: theme('colors.accent.700');
+  --unqops-elements-item-contentDanger: theme('colors.red.500');
+  --unqops-elements-item-backgroundDefault: rgba(0, 0, 0, 0);
+  --unqops-elements-item-backgroundActive: theme('colors.alpha.gray.5');
+  --unqops-elements-item-backgroundAccent: theme('colors.alpha.accent.10');
+  --unqops-elements-item-backgroundDanger: theme('colors.alpha.red.10');
+
+  --unqops-elements-loader-background: theme('colors.alpha.gray.10');
+  --unqops-elements-loader-progress: theme('colors.accent.500');
+
+  --unqops-elements-artifacts-background: theme('colors.white');
+  --unqops-elements-artifacts-backgroundHover: theme('colors.alpha.gray.2');
+  --unqops-elements-artifacts-borderColor: var(--unqops-elements-borderColor);
+  --unqops-elements-artifacts-inlineCode-background: theme('colors.gray.100');
+  --unqops-elements-artifacts-inlineCode-text: var(--unqops-elements-textPrimary);
+
+  --unqops-elements-actions-background: theme('colors.white');
+  --unqops-elements-actions-code-background: theme('colors.gray.800');
+
+  --unqops-elements-messages-background: theme('colors.gray.100');
+  --unqops-elements-messages-linkColor: theme('colors.accent.500');
+  --unqops-elements-messages-code-background: theme('colors.gray.800');
+  --unqops-elements-messages-inlineCode-background: theme('colors.gray.200');
+  --unqops-elements-messages-inlineCode-text: theme('colors.gray.800');
+
+  --unqops-elements-icon-success: theme('colors.green.500');
+  --unqops-elements-icon-error: theme('colors.red.500');
+  --unqops-elements-icon-primary: theme('colors.gray.950');
+  --unqops-elements-icon-secondary: theme('colors.gray.600');
+  --unqops-elements-icon-tertiary: theme('colors.gray.500');
+
+  --unqops-elements-dividerColor: theme('colors.gray.100');
+
+  --unqops-elements-prompt-background: theme('colors.alpha.white.80');
+
+  --unqops-elements-sidebar-dropdownShadow: theme('colors.alpha.gray.10');
+  --unqops-elements-sidebar-buttonBackgroundDefault: theme('colors.alpha.accent.10');
+  --unqops-elements-sidebar-buttonBackgroundHover: theme('colors.alpha.accent.20');
+  --unqops-elements-sidebar-buttonText: theme('colors.accent.700');
+
+  --unqops-elements-preview-addressBar-background: theme('colors.gray.100');
+  --unqops-elements-preview-addressBar-backgroundHover: theme('colors.alpha.gray.5');
+  --unqops-elements-preview-addressBar-backgroundActive: theme('colors.white');
+  --unqops-elements-preview-addressBar-text: var(--unqops-elements-textSecondary);
+  --unqops-elements-preview-addressBar-textActive: var(--unqops-elements-textPrimary);
+
+  --unqops-elements-terminals-background: theme('colors.white');
+  --unqops-elements-terminals-buttonBackground: var(--unqops-elements-bg-depth-4);
+
+  --unqops-elements-cta-background: theme('colors.gray.100');
+  --unqops-elements-cta-text: theme('colors.gray.950');
+
+  /* Terminal Colors */
+  --unqops-terminal-background: var(--unqops-elements-terminals-background);
+  --unqops-terminal-foreground: #333333;
+  --unqops-terminal-selection-background: #00000040;
+  --unqops-terminal-black: #000000;
+  --unqops-terminal-red: #cd3131;
+  --unqops-terminal-green: #00bc00;
+  --unqops-terminal-yellow: #949800;
+  --unqops-terminal-blue: #0451a5;
+  --unqops-terminal-magenta: #bc05bc;
+  --unqops-terminal-cyan: #0598bc;
+  --unqops-terminal-white: #555555;
+  --unqops-terminal-brightBlack: #686868;
+  --unqops-terminal-brightRed: #cd3131;
+  --unqops-terminal-brightGreen: #00bc00;
+  --unqops-terminal-brightYellow: #949800;
+  --unqops-terminal-brightBlue: #0451a5;
+  --unqops-terminal-brightMagenta: #bc05bc;
+  --unqops-terminal-brightCyan: #0598bc;
+  --unqops-terminal-brightWhite: #a5a5a5;
+  --modern-scrollbar-thumb-background: rgba(100, 100, 100, 0.3); // Example light theme color
+  --modern-scrollbar-thumb-backgroundHover: rgba(74, 74, 74, 0.8);
+}
+
+/* Color Tokens Dark Theme */
+:root,
+:root[data-theme='dark'] {
+  --unqops-elements-borderColor: theme('colors.alpha.white.10');
+  --unqops-elements-borderColorActive: theme('colors.accent.500');
+
+  --unqops-elements-bg-depth-1: theme('colors.gray.950');
+  --unqops-elements-bg-depth-2: theme('colors.gray.900');
+  --unqops-elements-bg-depth-3: theme('colors.gray.800');
+  --unqops-elements-bg-depth-4: theme('colors.alpha.white.5');
+
+  --unqops-elements-textPrimary: theme('colors.white');
+  --unqops-elements-textSecondary: theme('colors.gray.400');
+  --unqops-elements-textTertiary: theme('colors.gray.500');
+
+  --unqops-elements-code-background: theme('colors.gray.800');
+  --unqops-elements-code-text: theme('colors.white');
+
+  --unqops-elements-button-primary-background: theme('colors.alpha.accent.10');
+  --unqops-elements-button-primary-backgroundHover: theme('colors.alpha.accent.20');
+  --unqops-elements-button-primary-text: theme('colors.accent.500');
+
+  --unqops-elements-button-secondary-background: theme('colors.alpha.white.5');
+  --unqops-elements-button-secondary-backgroundHover: theme('colors.alpha.white.10');
+  --unqops-elements-button-secondary-text: theme('colors.white');
+
+  --unqops-elements-button-danger-background: theme('colors.alpha.red.10');
+  --unqops-elements-button-danger-backgroundHover: theme('colors.alpha.red.20');
+  --unqops-elements-button-danger-text: theme('colors.red.500');
+
+  --unqops-elements-item-contentDefault: theme('colors.alpha.white.50');
+  --unqops-elements-item-contentActive: theme('colors.white');
+  --unqops-elements-item-contentAccent: theme('colors.accent.500');
+  --unqops-elements-item-contentDanger: theme('colors.red.500');
+  --unqops-elements-item-backgroundDefault: rgba(255, 255, 255, 0);
+  --unqops-elements-item-backgroundActive: theme('colors.alpha.white.10');
+  --unqops-elements-item-backgroundAccent: theme('colors.alpha.accent.10');
+  --unqops-elements-item-backgroundDanger: theme('colors.alpha.red.10');
+
+  --unqops-elements-loader-background: theme('colors.alpha.gray.10');
+  --unqops-elements-loader-progress: theme('colors.accent.500');
+
+  --unqops-elements-artifacts-background: theme('colors.gray.900');
+  --unqops-elements-artifacts-backgroundHover: theme('colors.alpha.white.5');
+  --unqops-elements-artifacts-borderColor: var(--unqops-elements-borderColor);
+  --unqops-elements-artifacts-inlineCode-background: theme('colors.gray.800');
+  --unqops-elements-artifacts-inlineCode-text: theme('colors.white');
+
+  --unqops-elements-actions-background: theme('colors.gray.900');
+  --unqops-elements-actions-code-background: theme('colors.gray.800');
+
+  --unqops-elements-messages-background: theme('colors.gray.800');
+  --unqops-elements-messages-linkColor: theme('colors.accent.500');
+  --unqops-elements-messages-code-background: theme('colors.gray.900');
+  --unqops-elements-messages-inlineCode-background: theme('colors.gray.700');
+  --unqops-elements-messages-inlineCode-text: var(--unqops-elements-textPrimary);
+
+  --unqops-elements-icon-success: theme('colors.green.400');
+  --unqops-elements-icon-error: theme('colors.red.400');
+  --unqops-elements-icon-primary: theme('colors.gray.950');
+  --unqops-elements-icon-secondary: theme('colors.gray.600');
+  --unqops-elements-icon-tertiary: theme('colors.gray.500');
+
+  --unqops-elements-dividerColor: theme('colors.gray.100');
+
+  --unqops-elements-prompt-background: theme('colors.alpha.gray.80');
+
+  --unqops-elements-sidebar-dropdownShadow: theme('colors.alpha.gray.30');
+  --unqops-elements-sidebar-buttonBackgroundDefault: theme('colors.alpha.accent.10');
+  --unqops-elements-sidebar-buttonBackgroundHover: theme('colors.alpha.accent.20');
+  --unqops-elements-sidebar-buttonText: theme('colors.accent.500');
+
+  --unqops-elements-preview-addressBar-background: var(--unqops-elements-bg-depth-1);
+  --unqops-elements-preview-addressBar-backgroundHover: theme('colors.alpha.white.5');
+  --unqops-elements-preview-addressBar-backgroundActive: var(--unqops-elements-bg-depth-1);
+  --unqops-elements-preview-addressBar-text: var(--unqops-elements-textSecondary);
+  --unqops-elements-preview-addressBar-textActive: var(--unqops-elements-textPrimary);
+
+  --unqops-elements-terminals-background: var(--unqops-elements-bg-depth-1);
+  --unqops-elements-terminals-buttonBackground: var(--unqops-elements-bg-depth-3);
+
+  --unqops-elements-cta-background: theme('colors.alpha.white.10');
+  --unqops-elements-cta-text: theme('colors.white');
+
+  /* Terminal Colors */
+  --unqops-terminal-background: var(--unqops-elements-terminals-background);
+  --unqops-terminal-foreground: #eff0eb;
+  --unqops-terminal-selection-background: #97979b33;
+  --unqops-terminal-black: #000000;
+  --unqops-terminal-red: #ff5c57;
+  --unqops-terminal-green: #5af78e;
+  --unqops-terminal-yellow: #f3f99d;
+  --unqops-terminal-blue: #57c7ff;
+  --unqops-terminal-magenta: #ff6ac1;
+  --unqops-terminal-cyan: #9aedfe;
+  --unqops-terminal-white: #f1f1f0;
+  --unqops-terminal-brightBlack: #686868;
+  --unqops-terminal-brightRed: #ff5c57;
+  --unqops-terminal-brightGreen: #5af78e;
+  --unqops-terminal-brightYellow: #f3f99d;
+  --unqops-terminal-brightBlue: #57c7ff;
+  --unqops-terminal-brightMagenta: #ff6ac1;
+  --unqops-terminal-brightCyan: #9aedfe;
+  --unqops-terminal-brightWhite: #f1f1f0;
+  --modern-scrollbar-thumb-background: rgba(100, 100, 100, 0.3); // Example dark theme color (adjust as needed)
+  --modern-scrollbar-thumb-backgroundHover: rgba(10, 10, 10, 0.8);
+}
+
+/*
+ * Element Tokens
+ *
+ * Hierarchy: Element Token -> (Element Token | Color Tokens) -> Primitives
+ */
+:root {
+  --header-height: 54px;
+  --chat-max-width: 33rem;
+  --chat-min-width: 533px;
+  --workbench-width: min(calc(100% - var(--chat-min-width)), 2536px);
+  --workbench-inner-width: var(--workbench-width);
+  --workbench-left: calc(100% - var(--workbench-width));
+
+  /* Toasts */
+  --toastify-color-progress-success: var(--unqops-elements-icon-success);
+  --toastify-color-progress-error: var(--unqops-elements-icon-error);
+
+  /* Terminal */
+  --unqops-elements-terminal-backgroundColor: var(--unqops-terminal-background);
+  --unqops-elements-terminal-textColor: var(--unqops-terminal-foreground);
+  --unqops-elements-terminal-cursorColor: var(--unqops-terminal-foreground);
+  --unqops-elements-terminal-selection-backgroundColor: var(--unqops-terminal-selection-background);
+  --unqops-elements-terminal-color-black: var(--unqops-terminal-black);
+  --unqops-elements-terminal-color-red: var(--unqops-terminal-red);
+  --unqops-elements-terminal-color-green: var(--unqops-terminal-green);
+  --unqops-elements-terminal-color-yellow: var(--unqops-terminal-yellow);
+  --unqops-elements-terminal-color-blue: var(--unqops-terminal-blue);
+  --unqops-elements-terminal-color-magenta: var(--unqops-terminal-magenta);
+  --unqops-elements-terminal-color-cyan: var(--unqops-terminal-cyan);
+  --unqops-elements-terminal-color-white: var(--unqops-terminal-white);
+  --unqops-elements-terminal-color-brightBlack: var(--unqops-terminal-brightBlack);
+  --unqops-elements-terminal-color-brightRed: var(--unqops-terminal-brightRed);
+  --unqops-elements-terminal-color-brightGreen: var(--unqops-terminal-brightGreen);
+  --unqops-elements-terminal-color-brightYellow: var(--unqops-terminal-brightYellow);
+  --unqops-elements-terminal-color-brightBlue: var(--unqops-terminal-brightBlue);
+  --unqops-elements-terminal-color-brightMagenta: var(--unqops-terminal-brightMagenta);
+  --unqops-elements-terminal-color-brightCyan: var(--unqops-terminal-brightCyan);
+  --unqops-elements-terminal-color-brightWhite: var(--unqops-terminal-brightWhite);
+}

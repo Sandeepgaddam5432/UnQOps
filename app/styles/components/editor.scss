@@ -1,0 +1,135 @@
+:root {
+  --cm-backgroundColor: var(--unqops-elements-editor-backgroundColor, var(--unqops-elements-bg-depth-1));
+  --cm-textColor: var(--unqops-elements-editor-textColor, var(--unqops-elements-textPrimary));
+
+  /* Gutter */
+
+  --cm-gutter-backgroundColor: var(--unqops-elements-editor-gutter-backgroundColor, var(--cm-backgroundColor));
+  --cm-gutter-textColor: var(--unqops-elements-editor-gutter-textColor, var(--unqops-elements-textSecondary));
+  --cm-gutter-activeLineTextColor: var(--unqops-elements-editor-gutter-activeLineTextColor, var(--cm-gutter-textColor));
+
+  /* Fold Gutter */
+
+  --cm-foldGutter-textColor: var(--unqops-elements-editor-foldGutter-textColor, var(--cm-gutter-textColor));
+  --cm-foldGutter-textColorHover: var(--unqops-elements-editor-foldGutter-textColorHover, var(--cm-gutter-textColor));
+
+  /* Active Line */
+
+  --cm-activeLineBackgroundColor: var(--unqops-elements-editor-activeLineBackgroundColor, rgb(224 231 235 / 30%));
+
+  /* Cursor */
+
+  --cm-cursor-width: 2px;
+  --cm-cursor-backgroundColor: var(--unqops-elements-editor-cursorColor, var(--unqops-elements-textSecondary));
+
+  /* Matching Brackets */
+
+  --cm-matching-bracket: var(--unqops-elements-editor-matchingBracketBackgroundColor, rgb(50 140 130 / 0.3));
+
+  /* Selection */
+
+  --cm-selection-backgroundColorFocused: var(--unqops-elements-editor-selection-backgroundColor, #42b4ff);
+  --cm-selection-backgroundOpacityFocused: var(--unqops-elements-editor-selection-backgroundOpacity, 0.3);
+  --cm-selection-backgroundColorBlured: var(--unqops-elements-editor-selection-inactiveBackgroundColor, #c9e9ff);
+  --cm-selection-backgroundOpacityBlured: var(--unqops-elements-editor-selection-inactiveBackgroundOpacity, 0.3);
+
+  /* Panels */
+
+  --cm-panels-borderColor: var(--unqops-elements-editor-panels-borderColor, var(--unqops-elements-borderColor));
+
+  /* Search */
+
+  --cm-search-backgroundColor: var(--unqops-elements-editor-search-backgroundColor, var(--cm-backgroundColor));
+  --cm-search-textColor: var(--unqops-elements-editor-search-textColor, var(--unqops-elements-textSecondary));
+  --cm-search-closeButton-backgroundColor: var(--unqops-elements-editor-search-closeButton-backgroundColor, transparent);
+
+  --cm-search-closeButton-backgroundColorHover: var(
+    --unqops-elements-editor-search-closeButton-backgroundColorHover,
+    var(--unqops-elements-item-backgroundActive)
+  );
+
+  --cm-search-closeButton-textColor: var(
+    --unqops-elements-editor-search-closeButton-textColor,
+    var(--unqops-elements-item-contentDefault)
+  );
+
+  --cm-search-closeButton-textColorHover: var(
+    --unqops-elements-editor-search-closeButton-textColorHover,
+    var(--unqops-elements-item-contentActive)
+  );
+
+  --cm-search-button-backgroundColor: var(
+    --unqops-elements-editor-search-button-backgroundColor,
+    var(--unqops-elements-item-backgroundDefault)
+  );
+
+  --cm-search-button-backgroundColorHover: var(
+    --unqops-elements-editor-search-button-backgroundColorHover,
+    var(--unqops-elements-item-backgroundActive)
+  );
+
+  --cm-search-button-textColor: var(--unqops-elements-editor-search-button-textColor, var(--unqops-elements-textSecondary));
+
+  --cm-search-button-textColorHover: var(
+    --unqops-elements-editor-search-button-textColorHover,
+    var(--unqops-elements-textPrimary)
+  );
+
+  --cm-search-button-borderColor: var(--unqops-elements-editor-search-button-borderColor, transparent);
+  --cm-search-button-borderColorHover: var(--unqops-elements-editor-search-button-borderColorHover, transparent);
+
+  --cm-search-button-borderColorFocused: var(
+    --unqops-elements-editor-search-button-borderColorFocused,
+    var(--unqops-elements-borderColorActive)
+  );
+
+  --cm-search-input-backgroundColor: var(--unqops-elements-editor-search-input-backgroundColor, transparent);
+  --cm-search-input-textColor: var(--unqops-elements-editor-search-input-textColor, var(--unqops-elements-textPrimary));
+  --cm-search-input-borderColor: var(--unqops-elements-editor-search-input-borderColor, var(--unqops-elements-borderColor));
+
+  --cm-search-input-borderColorFocused: var(
+    --unqops-elements-editor-search-input-borderColorFocused,
+    var(--unqops-elements-borderColorActive)
+  );
+
+  /* Tooltip */
+
+  --cm-tooltip-backgroundColor: var(--unqops-elements-editor-tooltip-backgroundColor, var(--cm-backgroundColor));
+  --cm-tooltip-textColor: var(--unqops-elements-editor-tooltip-textColor, var(--unqops-elements-textPrimary));
+
+  --cm-tooltip-backgroundColorSelected: var(
+    --unqops-elements-editor-tooltip-backgroundColorSelected,
+    theme('colors.alpha.accent.30')
+  );
+
+  --cm-tooltip-textColorSelected: var(
+    --unqops-elements-editor-tooltip-textColorSelected,
+    var(--unqops-elements-textPrimary)
+  );
+
+  --cm-tooltip-borderColor: var(--unqops-elements-editor-tooltip-borderColor, var(--unqops-elements-borderColor));
+
+  --cm-searchMatch-backgroundColor: var(--unqops-elements-editor-searchMatch-backgroundColor, rgba(234, 92, 0, 0.33));
+}
+
+html[data-theme='light'] {
+  --unqops-elements-editor-gutter-textColor: #237893;
+  --unqops-elements-editor-gutter-activeLineTextColor: var(--unqops-elements-textPrimary);
+  --unqops-elements-editor-foldGutter-textColorHover: var(--unqops-elements-textPrimary);
+  --unqops-elements-editor-activeLineBackgroundColor: rgb(50 53 63 / 5%);
+  --unqops-elements-editor-tooltip-backgroundColorSelected: theme('colors.alpha.accent.20');
+  --unqops-elements-editor-search-button-backgroundColor: theme('colors.gray.100');
+  --unqops-elements-editor-search-button-backgroundColorHover: theme('colors.alpha.gray.10');
+}
+
+html[data-theme='dark'] {
+  --cm-backgroundColor: var(--unqops-elements-bg-depth-2);
+  --unqops-elements-editor-gutter-textColor: var(--unqops-elements-textTertiary);
+  --unqops-elements-editor-gutter-activeLineTextColor: var(--unqops-elements-textSecondary);
+  --unqops-elements-editor-selection-inactiveBackgroundOpacity: 0.3;
+  --unqops-elements-editor-activeLineBackgroundColor: rgb(50 53 63 / 50%);
+  --unqops-elements-editor-foldGutter-textColorHover: var(--unqops-elements-textPrimary);
+  --unqops-elements-editor-matchingBracketBackgroundColor: rgba(66, 180, 255, 0.3);
+  --unqops-elements-editor-search-button-backgroundColor: theme('colors.gray.800');
+  --unqops-elements-editor-search-button-backgroundColorHover: theme('colors.alpha.white.10');
+}
