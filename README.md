@@ -1,368 +1,209 @@
 # UnQOps
 
-[![UnQOps: AI-Powered Full-Stack Web Development in the Browser](./public/social_preview.jpg)](https://UnQOps)
+[![UnQOps: AI-Powered Full-Stack Web Development in the Browser](./public/social_preview.jpg)](https://unqops.dev)
 
-Welcome to UnQOps, the official open source version of UnQOps, which allows you to choose the LLM that you use for each prompt! Currently, you can use OpenAI, Anthropic, Ollama, OpenRouter, Gemini, LMStudio, Mistral, xAI, HuggingFace, DeepSeek, or Groq models - and it is easily extended to use any other model supported by the Vercel AI SDK! See the instructions below for running this locally and extending it to include more models.
+**UnQOps** is a powerful, open-source AI-powered full-stack web development platform that runs entirely in your browser. Build complete web applications using natural language prompts with support for multiple AI models and providers.
 
------
-Check the [UnQOps Docs](https://Sandeepgaddam5432.github.io/UnQOps/) for more offical installation instructions and more informations.
+## 🚀 Key Features
 
------
-Also [this pinned post in our community](https://thinktank.ottomator.ai/t/videos-tutorial-helpful-content/3243) has a bunch of incredible resources for running and deploying UnQOps yourself!
+- **🤖 Multi-LLM Support**: Choose from OpenAI, Anthropic, Ollama, OpenRouter, Gemini, LMStudio, Mistral, xAI, HuggingFace, DeepSeek, Groq, and more
+- **🌐 Browser-Based Development**: Complete development environment with no local setup required
+- **📁 Project Management**: Create, edit, and manage full-stack applications
+- **🔄 Real-time Preview**: Instant preview of your applications as you build
+- **💾 Multiple Export Options**: Download as ZIP, deploy to Netlify, or sync to local folders
+- **🖼️ Visual Context**: Attach images to prompts for better AI understanding
+- **📱 Mobile Friendly**: Responsive design that works on all devices
+- **🔧 Integrated Terminal**: Full terminal access with streaming command output
+- **⚡ Hot Reload**: Real-time updates and live reloading
 
-We have also launched an experimental agent called the "UnQOps Expert" that can answer common questions about UnQOps. Find it here on the [oTTomator Live Agent Studio](https://studio.ottomator.ai/).
+## 🎯 Perfect For
 
-UnQOps was originally started by [Cole Medin](https://www.youtube.com/@ColeMedin) but has quickly grown into a massive community effort to build the BEST open source AI coding assistant!
+- **Rapid Prototyping**: Quickly build and test ideas
+- **Learning & Education**: Perfect for students and developers learning new technologies
+- **Client Demos**: Create impressive prototypes for client presentations
+- **Hackathons**: Fast development cycles for competitive coding
+- **Proof of Concepts**: Validate ideas before full development
 
-## Table of Contents
+## 🚀 Quick Start
 
-- [Join the Community](#join-the-community)
-- [Requested Additions](#requested-additions)
-- [Features](#features)
-- [Setup](#setup)
-- [Run the Application](#run-the-application)
-- [Available Scripts](#available-scripts)
-- [Contributing](#contributing)
-- [Roadmap](#roadmap)
-- [FAQ](#faq)
+### Option 1: Instant Deployment (Recommended)
 
-## Join the community
+Deploy UnQOps to Cloudflare Pages with one click:
 
-[Join the UnQOps community here, in the oTTomator Think Tank!](https://thinktank.ottomator.ai)
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sandeepgaddam5432/UnQOps)
 
-## Project management
-
-UnQOps is a community effort! Still, the core team of contributors aims at organizing the project in way that allows
-you to understand where the current areas of focus are.
-
-If you want to know what we are working on, what we are planning to work on, or if you want to contribute to the
-project, please check the [project management guide](./PROJECT.md) to get started easily.
-
-## Requested Additions
-
-- ✅ OpenRouter Integration (@coleam00)
-- ✅ Gemini Integration (@jonathands)
-- ✅ Autogenerate Ollama models from what is downloaded (@yunatamos)
-- ✅ Filter models by provider (@jasonm23)
-- ✅ Download project as ZIP (@fabwaseem)
-- ✅ Improvements to the main UnQOps.new prompt in `app\lib\.server\llm\prompts.ts` (@kofi-bhr)
-- ✅ DeepSeek API Integration (@zenith110)
-- ✅ Mistral API Integration (@ArulGandhi)
-- ✅ "Open AI Like" API Integration (@ZerxZ)
-- ✅ Ability to sync files (one way sync) to local folder (@muzafferkadir)
-- ✅ Containerize the application with Docker for easy installation (@aaronbolton)
-- ✅ Publish projects directly to GitHub (@goncaloalves)
-- ✅ Ability to enter API keys in the UI (@ali00209)
-- ✅ xAI Grok Beta Integration (@milutinke)
-- ✅ LM Studio Integration (@karrot0)
-- ✅ HuggingFace Integration (@ahsan3219)
-- ✅ UnQOps terminal to see the output of LLM run commands (@thecodacus)
-- ✅ Streaming of code output (@thecodacus)
-- ✅ Ability to revert code to earlier version (@wonderwhy-er)
-- ✅ Chat history backup and restore functionality (@sidbetatester)
-- ✅ Cohere Integration (@hasanraiyan)
-- ✅ Dynamic model max token length (@hasanraiyan)
-- ✅ Better prompt enhancing (@SujalXplores)
-- ✅ Prompt caching (@SujalXplores)
-- ✅ Load local projects into the app (@wonderwhy-er)
-- ✅ Together Integration (@mouimet-infinisoft)
-- ✅ Mobile friendly (@qwikode)
-- ✅ Better prompt enhancing (@SujalXplores)
-- ✅ Attach images to prompts (@atrokhym)(@stijnus)
-- ✅ Added Git Clone button (@thecodacus)
-- ✅ Git Import from url (@thecodacus)
-- ✅ PromptLibrary to have different variations of prompts for different use cases (@thecodacus)
-- ✅ Detect package.json and commands to auto install & run preview for folder and git import (@wonderwhy-er)
-- ✅ Selection tool to target changes visually (@emcconnell)
-- ✅ Detect terminal Errors and ask UnQOps to fix it (@thecodacus)
-- ✅ Detect preview Errors and ask UnQOps to fix it (@wonderwhy-er)
-- ✅ Add Starter Template Options (@thecodacus)
-- ✅ Perplexity Integration (@meetpateltech)
-- ✅ AWS Bedrock Integration (@kunjabijukchhe)
-- ✅ Add a "Diff View" to see the changes (@toddyclipsgg)
-- ⬜ **HIGH PRIORITY** - Prevent UnQOps from rewriting files as often (file locking and diffs)
-- ⬜ **HIGH PRIORITY** - Better prompting for smaller LLMs (code window sometimes doesn't start)
-- ⬜ **HIGH PRIORITY** - Run agents in the backend as opposed to a single model call
-- ✅ Deploy directly to Netlify (@xKevIsDev)
-- ✅ Supabase Integration (@xKevIsDev)
-- ⬜ Have LLM plan the project in a MD file for better results/transparency
-- ⬜ VSCode Integration with git-like confirmations
-- ⬜ Upload documents for knowledge - UI design templates, a code base to reference coding style, etc.
-- ✅ Voice prompting
-- ⬜ Azure Open AI API Integration
-- ⬜ Vertex AI Integration
-- ⬜ Granite Integration
-- ✅ Popout Window for Web Container(@stijnus)
-- ✅ Ability to change Popout window size (@stijnus)
-
-## Features
-
-- **AI-powered full-stack web development** for **NodeJS based applications** directly in your browser.
-- **Support for multiple LLMs** with an extensible architecture to integrate additional models.
-- **Attach images to prompts** for better contextual understanding.
-- **Integrated terminal** to view output of LLM-run commands.
-- **Revert code to earlier versions** for easier debugging and quicker changes.
-- **Download projects as ZIP** for easy portability Sync to a folder on the host.
-- **Integration-ready Docker support** for a hassle-free setup.
-- **Deploy** directly to **Netlify**
-
-## Setup
-
-If you're new to installing software from GitHub, don't worry! If you encounter any issues, feel free to submit an "issue" using the provided links or improve this documentation by forking the repository, editing the instructions, and submitting a pull request. The following instruction will help you get the stable branch up and running on your local machine in no time.
-
-Let's get you up and running with the stable version of UnQOps.DIY!
-
-## Quick Download
-
-[![Download Latest Release](https://img.shields.io/github/v/release/Sandeepgaddam5432/UnQOps?label=Download%20Bolt&sort=semver)](https://github.com/Sandeepgaddam5432/UnQOps/releases/latest) ← Click here to go the the latest release version!
-
-- Next **click source.zip**
-
-## Prerequisites
-
-Before you begin, you'll need to install two important pieces of software:
-
-### Install Node.js
-
-Node.js is required to run the application.
-
-1. Visit the [Node.js Download Page](https://nodejs.org/en/download/)
-2. Download the "LTS" (Long Term Support) version for your operating system
-3. Run the installer, accepting the default settings
-4. Verify Node.js is properly installed:
-   - **For Windows Users**:
-     1. Press `Windows + R`
-     2. Type "sysdm.cpl" and press Enter
-     3. Go to "Advanced" tab → "Environment Variables"
-     4. Check if `Node.js` appears in the "Path" variable
-   - **For Mac/Linux Users**:
-     1. Open Terminal
-     2. Type this command:
-        ```bash
-        echo $PATH
-        ```
-     3. Look for `/usr/local/bin` in the output
-
-## Running the Application
-
-You have two options for running UnQOps.DIY: directly on your machine or using Docker.
-
-### Option 1: Direct Installation (Recommended for Beginners)
-
-1. **Install Package Manager (pnpm)**:
-
-   ```bash
-   npm install -g pnpm
-   ```
-
-2. **Install Project Dependencies**:
-
-   ```bash
-   pnpm install
-   ```
-
-3. **Start the Application**:
-
-   ```bash
-   pnpm run dev
-   ```
-   
-### Option 2: Using Docker
-
-This option requires some familiarity with Docker but provides a more isolated environment.
-
-#### Additional Prerequisite
-
-- Install Docker: [Download Docker](https://www.docker.com/)
-
-#### Steps:
-
-1. **Build the Docker Image**:
-
-   ```bash
-   # Using npm script:
-   npm run dockerbuild
-
-   # OR using direct Docker command:
-   docker build . --target unqops-development
-   ```
-
-2. **Run the Container**:
-   ```bash
-   docker compose --profile development up
-   ```
-
-## Configuring API Keys and Providers
-
-### Adding Your API Keys
-
-Setting up your API keys in UnQOps.DIY is straightforward:
-
-1. Open the home page (main interface)
-2. Select your desired provider from the dropdown menu
-3. Click the pencil (edit) icon
-4. Enter your API key in the secure input field
-
-![API Key Configuration Interface](./docs/images/api-key-ui-section.png)
-
-### Configuring Custom Base URLs
-
-For providers that support custom base URLs (such as Ollama or LM Studio), follow these steps:
-
-1. Click the settings icon in the sidebar to open the settings menu
-   ![Settings Button Location](./docs/images/UnQOps-settings-button.png)
-
-2. Navigate to the "Providers" tab
-3. Search for your provider using the search bar
-4. Enter your custom base URL in the designated field
-   ![Provider Base URL Configuration](./docs/images/provider-base-url.png)
-
-> **Note**: Custom base URLs are particularly useful when running local instances of AI models or using custom API endpoints.
-
-### Supported Providers
-
-- Ollama
-- LM Studio
-- OpenAILike
-
-## Setup Using Git (For Developers only)
-
-This method is recommended for developers who want to:
-
-- Contribute to the project
-- Stay updated with the latest changes
-- Switch between different versions
-- Create custom modifications
+### Option 2: Local Development
 
 #### Prerequisites
+- Node.js 18+ ([Download here](https://nodejs.org/))
+- pnpm package manager
 
-1. Install Git: [Download Git](https://git-scm.com/downloads)
+#### Installation Steps
 
-#### Initial Setup
-
-1. **Clone the Repository**:
-
+1. **Clone the repository**:
    ```bash
-   git clone -b stable https://github.com/Sandeepgaddam5432/UnQOps.git
-   ```
-
-2. **Navigate to Project Directory**:
-
-   ```bash
+   git clone https://github.com/Sandeepgaddam5432/UnQOps.git
    cd UnQOps
    ```
 
-3. **Install Dependencies**:
-
+2. **Install dependencies**:
    ```bash
+   npm install -g pnpm
    pnpm install
    ```
 
-4. **Start the Development Server**:
+3. **Start development server**:
    ```bash
    pnpm run dev
    ```
 
-5. **(OPTIONAL)** Switch to the Main Branch if you want to use pre-release/testbranch:
-   ```bash
-   git checkout main
-   pnpm install
-   pnpm run dev
-   ```
-  Hint: Be aware that this can have beta-features and more likely got bugs than the stable release
+4. **Open your browser** and navigate to `http://localhost:5173`
 
->**Open the WebUI to test (Default: http://localhost:5173)**
->   - Beginngers: 
->     - Try to use a sophisticated Provider/Model like Anthropic with Claude Sonnet 3.x Models to get best results
->     - Explanation: The System Prompt currently implemented in UnQOps cant cover the best performance for all providers and models out there. So it works better with some models, then other, even if the models itself are perfect for >programming
->     - Future: Planned is a Plugin/Extentions-Library so there can be different System Prompts for different Models, which will help to get better results
+### Option 3: Docker Deployment
 
-#### Staying Updated
+For containerized deployment:
 
-To get the latest changes from the repository:
+```bash
+# Build the image
+docker build . --target unqops-development
 
-1. **Save Your Local Changes** (if any):
+# Run with Docker Compose
+docker compose --profile development up
+```
 
-   ```bash
-   git stash
-   ```
+## 🔑 Configuration
 
-2. **Pull Latest Updates**:
+### Setting Up API Keys
 
-   ```bash
-   git pull 
-   ```
+1. Open UnQOps in your browser
+2. Click the provider dropdown in the interface
+3. Select your preferred AI provider
+4. Click the edit (pencil) icon
+5. Enter your API key securely
 
-3. **Update Dependencies**:
+### Supported AI Providers
 
-   ```bash
-   pnpm install
-   ```
+| Provider | Models Available | Custom Base URL |
+|----------|------------------|-----------------|
+| **OpenAI** | GPT-4, GPT-3.5, etc. | ✅ |
+| **Anthropic** | Claude 3.5 Sonnet, Claude 3 Opus | ✅ |
+| **Google** | Gemini Pro, Gemini Ultra | ❌ |
+| **Ollama** | Llama 2, CodeLlama, Mistral | ✅ |
+| **Groq** | Llama 2, Mixtral | ✅ |
+| **DeepSeek** | DeepSeek Coder | ✅ |
+| **xAI** | Grok Beta | ❌ |
+| **HuggingFace** | Various OSS models | ✅ |
+| **LM Studio** | Local models | ✅ |
 
-4. **Restore Your Local Changes** (if any):
-   ```bash
-   git stash pop
-   ```
+### Custom Base URLs
 
-#### Troubleshooting Git Setup
+For providers supporting custom endpoints:
 
-If you encounter issues:
+1. Click the settings icon in the sidebar
+2. Navigate to "Providers" tab
+3. Search for your provider
+4. Enter your custom base URL
 
-1. **Clean Installation**:
+## 📦 Deployment Options
 
-   ```bash
-   # Remove node modules and lock files
-   rm -rf node_modules pnpm-lock.yaml
+### Cloudflare Pages (Recommended)
 
-   # Clear pnpm cache
-   pnpm store prune
+UnQOps is optimized for Cloudflare Pages deployment:
 
-   # Reinstall dependencies
-   pnpm install
-   ```
+1. **One-Click Deploy**: Use the deploy button above
+2. **Manual Deploy**: 
+   - Fork this repository
+   - Connect your GitHub account to Cloudflare Pages
+   - Select the repository and deploy
 
-2. **Reset Local Changes**:
-   ```bash
-   # Discard all local changes
-   git reset --hard origin/main
-   ```
+### Netlify
 
-Remember to always commit your local changes or stash them before pulling updates to avoid conflicts.
+Deploy directly to Netlify from the UnQOps interface:
+
+1. Build your application in UnQOps
+2. Click the "Deploy to Netlify" button
+3. Follow the deployment wizard
+
+### Local Export
+
+- **ZIP Download**: Download your complete project as a ZIP file
+- **Folder Sync**: Sync projects to a local directory for further development
+- **GitHub Integration**: Push projects directly to GitHub repositories
+
+## 🛠️ Development Scripts
+
+```bash
+# Development
+pnpm run dev              # Start development server
+pnpm run build            # Build for production
+pnpm run preview          # Preview production build
+
+# Testing & Quality
+pnpm test                 # Run test suite
+pnpm run typecheck        # TypeScript type checking
+pnpm run lint:fix         # Fix linting issues
+
+# Deployment
+pnpm run build          # Deploy to Cloudflare Pages
+pnpm run start            # Run production build locally
+```
+
+## 🏗️ Architecture
+
+UnQOps is built with modern web technologies:
+
+- **Frontend**: React + Vite + TypeScript
+- **Styling**: Tailwind CSS
+- **Runtime**: WebContainers API for browser-based execution
+- **AI Integration**: Vercel AI SDK for multi-provider support
+- **Deployment**: Cloudflare Pages + Workers
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+See our [Contributing Guide](CONTRIBUTING.md) for detailed guidelines.
+
+## 🌟 Community
+
+- **Discord**: [Join our community](https://discord.gg/unqops)
+- **GitHub Discussions**: [Ask questions and share ideas](https://github.com/Sandeepgaddam5432/UnQOps/discussions)
+- **Documentation**: [Full documentation](https://Sandeepgaddam5432.github.io/UnQOps/)
+
+## 📋 Roadmap
+
+### Current Focus
+- Enhanced multi-file editing capabilities
+- Improved AI model performance optimization
+- Advanced project templates and scaffolding
+- Better mobile experience
+
+### Upcoming Features
+- VS Code integration
+- Advanced debugging tools
+- Team collaboration features
+- Plugin/extension system
+
+## 🔒 Enterprise & Licensing
+
+### Open Source License
+UnQOps source code is distributed under the MIT License.
+
+### WebContainers Commercial License
+Production usage in commercial, for-profit settings requires a [WebContainers API license](https://webcontainers.io/enterprise). Contact us for enterprise licensing options.
 
 ---
 
-## Available Scripts
+<div align="center">
 
-- **`pnpm run dev`**: Starts the development server.
-- **`pnpm run build`**: Builds the project.
-- **`pnpm run start`**: Runs the built application locally using Wrangler Pages.
-- **`pnpm run preview`**: Builds and runs the production build locally.
-- **`pnpm test`**: Runs the test suite using Vitest.
-- **`pnpm run typecheck`**: Runs TypeScript type checking.
-- **`pnpm run typegen`**: Generates TypeScript types using Wrangler.
-- **`pnpm run deploy`**: Deploys the project to Cloudflare Pages.
-- **`pnpm run lint:fix`**: Automatically fixes linting issues.
+**Built with ❤️ by the Sandeep Gaddam**
 
----
+[Website](https://unqops.pages.dev) 
 
-## Contributing
-
-We welcome contributions! Check out our [Contributing Guide](CONTRIBUTING.md) to get started.
-
----
-
-## Roadmap
-
-Explore upcoming features and priorities on our [Roadmap](https://roadmap.sh/r/ottodev-roadmap-2ovzo).
-
----
-
-## FAQ
-
-For answers to common questions, issues, and to see a list of recommended models, visit our [FAQ Page](FAQ.md).
-
-
-# Licensing
-**Who needs a commercial WebContainer API license?**
-
-UnQOps source code is distributed as MIT, but it uses WebContainers API that [requires licensing](https://webcontainers.io/enterprise) for production usage in a commercial, for-profit setting. (Prototypes or POCs do not require a commercial license.) If you're using the API to meet the needs of your customers, prospective customers, and/or employees, you need a license to ensure compliance with our Terms of Service. Usage of the API in violation of these terms may result in your access being revoked.
+</div>
