@@ -1,6 +1,6 @@
 u# UnQOps
 
-[![UnQOps: AI-Powered Full-Stack Web Development in the Browser](./public/social_preview.jpg)](https://unqops.dev)
+[![UnQOps: AI-Powered Full-Stack Web Development in the Browser](./public/social_preview.jpg)](https://unqops.pages.dev)
 
 **UnQOps** is a powerful, open-source AI-powered full-stack web development platform that runs entirely in your browser. Build complete web applications using natural language prompts with support for multiple AI models and providers.
 
