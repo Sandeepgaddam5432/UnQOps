@@ -1,4 +1,4 @@
-u# UnQOps
+# UnQOps
 
 [![UnQOps: AI-Powered Full-Stack Web Development in the Browser](./public/social_preview.jpg)](https://unqops.pages.dev)
 
