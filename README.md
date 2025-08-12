@@ -1,4 +1,4 @@
-# UnQOps
+u# UnQOps
 
 [![UnQOps: AI-Powered Full-Stack Web Development in the Browser](./public/social_preview.jpg)](https://unqops.dev)
 
@@ -170,11 +170,6 @@ We welcome contributions! Here's how to get started:
 
 See our [Contributing Guide](CONTRIBUTING.md) for detailed guidelines.
 
-## 🌟 Community
-
-- **Discord**: [Join our community](https://discord.gg/unqops)
-- **GitHub Discussions**: [Ask questions and share ideas](https://github.com/Sandeepgaddam5432/UnQOps/discussions)
-- **Documentation**: [Full documentation](https://Sandeepgaddam5432.github.io/UnQOps/)
 
 ## 📋 Roadmap
 
