@@ -18,7 +18,7 @@ COPY . .
 EXPOSE 5173
 
 # Production image
-FROM base AS unqops-production
+FROM base AS bolt-ai-production
 
 # Define environment variables with default values or let them be overridden
 ARG GROQ_API_KEY

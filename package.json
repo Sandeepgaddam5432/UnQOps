@@ -7,8 +7,8 @@
   "type": "module",
   "version": "1.0.0",
   "author": {
-    "name": "UnQOps team",
-    "email": "maintainers@UnQOps"
+    "name": "Sandeep Gaddam",
+    "email": "devunq@gmail.com"
   },
   "scripts": {
     "deploy": "npm run build && wrangler pages deploy",
@@ -23,7 +23,7 @@
     "start": "node -e \"const { spawn } = require('child_process'); const isWindows = process.platform === 'win32'; const cmd = isWindows ? 'npm run start:windows' : 'npm run start:unix'; const child = spawn(cmd, { shell: true, stdio: 'inherit' }); child.on('exit', code => process.exit(code));\"",
     "dockerstart": "bindings=$(./bindings.sh) && wrangler pages dev ./build/client $bindings --ip 0.0.0.0 --port 5173 --no-show-interactive-dev-session",
     "dockerrun": "docker run -it -d --name unqops-live -p 5173:5173 --env-file .env.local unqops",
-    "dockerbuild:prod": "docker build -t unqops:production -t unqops:latest --target unqops-production .",
+    "dockerbuild:prod": "docker build -t unqops:production -t unqops:latest --target bolt-ai-production .",
     "dockerbuild": "docker build -t unqops:development -t unqops:latest --target unqops-development .",
     "typecheck": "tsc",
     "typegen": "wrangler types",
