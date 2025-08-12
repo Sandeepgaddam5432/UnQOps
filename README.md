@@ -10,7 +10,7 @@ u# UnQOps
 - **🌐 Browser-Based Development**: Complete development environment with no local setup required
 - **📁 Project Management**: Create, edit, and manage full-stack applications
 - **🔄 Real-time Preview**: Instant preview of your applications as you build
-- **💾 Multiple Export Options**: Download as ZIP, deploy to Netlify, or sync to local folders
+- **💾 Multiple Export Options**: Download as ZIP, deploy to Netlify, or sync to github and local folders
 - **🖼️ Visual Context**: Attach images to prompts for better AI understanding
 - **📱 Mobile Friendly**: Responsive design that works on all devices
 - **🔧 Integrated Terminal**: Full terminal access with streaming command output
