@@ -12,7 +12,6 @@ import type { TabType, Profile } from './types';
 import { TAB_LABELS, DEFAULT_TAB_CONFIG, TAB_DESCRIPTIONS } from './constants';
 import { DialogTitle } from '~/components/ui/Dialog';
 import { AvatarDropdown } from './AvatarDropdown';
-import BackgroundRays from '~/components/ui/BackgroundRays';
 
 // Import all tab components
 import ProfileTab from '~/components/@settings/tabs/profile/ProfileTab';
@@ -213,7 +212,7 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
           >
             <div
               className={classNames(
-                'w-[1200px] h-[90vh]',
+                'w-[min(1200px,calc(100vw-24px))] h-[90vh]',
                 'bg-unqops-elements-background-depth-1',
                 'rounded-2xl shadow-2xl',
                 'border border-unqops-elements-borderColor',
@@ -223,9 +222,6 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
                 open ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4',
               )}
             >
-              <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                <BackgroundRays />
-              </div>
               <div className="relative z-10 flex flex-col h-full">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -233,6 +229,7 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
                     {(activeTab || showTabManagement) && (
                       <button
                         onClick={handleBack}
+                        aria-label="Back"
                         className="flex items-center justify-center w-8 h-8 rounded-full bg-transparent hover:bg-purple-500/10 dark:hover:bg-purple-500/20 group transition-colors duration-150"
                       >
                         <div className="i-ph:arrow-left w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-purple-500 transition-colors" />
@@ -252,6 +249,7 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
                     {/* Close Button */}
                     <button
                       onClick={handleClose}
+                      aria-label="Close settings"
                       className="flex items-center justify-center w-8 h-8 rounded-full bg-transparent hover:bg-purple-500/10 dark:hover:bg-purple-500/20 group transition-all duration-200"
                     >
                       <div className="i-ph:x w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-purple-500 transition-colors" />

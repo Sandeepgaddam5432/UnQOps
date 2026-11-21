@@ -305,6 +305,11 @@ export const Menu = () => {
 
   useEffect(() => {
     const toggleNavigation = () => setOpen((current) => !current);
+    const openHistory = () => setOpen(true);
+    const openSettings = () => {
+      setOpen(false);
+      setIsSettingsOpen(true);
+    };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false);
@@ -312,10 +317,14 @@ export const Menu = () => {
     };
 
     window.addEventListener('unqops:toggle-navigation', toggleNavigation);
+    window.addEventListener('unqops:open-history', openHistory);
+    window.addEventListener('unqops:open-settings', openSettings);
     window.addEventListener('keydown', closeOnEscape);
 
     return () => {
       window.removeEventListener('unqops:toggle-navigation', toggleNavigation);
+      window.removeEventListener('unqops:open-history', openHistory);
+      window.removeEventListener('unqops:open-settings', openSettings);
       window.removeEventListener('keydown', closeOnEscape);
     };
   }, []);

@@ -377,17 +377,18 @@ export const Workbench = memo(
               {
                 'w-full': isSmallViewport,
                 'left-0': showWorkbench && isSmallViewport,
-                'left-[var(--workbench-left)]': showWorkbench,
+                'left-[var(--workbench-left)]': showWorkbench && !isSmallViewport,
                 'left-[100%]': !showWorkbench,
               },
             )}
           >
             <div className="absolute inset-0 px-2 lg:px-4">
               <div className="h-full flex flex-col bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor shadow-sm rounded-lg overflow-hidden">
-                <div className="flex items-center px-3 py-2 border-b border-unqops-elements-borderColor gap-1.5">
+                <div className="flex items-center px-3 py-2 border-b border-unqops-elements-borderColor gap-1.5 overflow-x-auto">
                   <button
                     className={`${showChat ? 'i-ph:sidebar-simple-fill' : 'i-ph:sidebar-simple'} text-lg text-unqops-elements-textSecondary mr-1`}
                     disabled={!canHideChat || isSmallViewport}
+                    aria-label={showChat ? 'Hide chat' : 'Show chat'}
                     onClick={() => {
                       if (canHideChat) {
                         chatStore.setKey('showChat', !showChat);
@@ -457,6 +458,7 @@ export const Workbench = memo(
                   )}
                   <IconButton
                     icon="i-ph:x-circle"
+                    title="Close workbench"
                     className="-mr-1"
                     size="xl"
                     onClick={() => {

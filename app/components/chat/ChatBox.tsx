@@ -139,9 +139,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
           </button>
         </div>
       )}
-      <div
-        className={classNames('relative shadow-xs border border-unqops-elements-borderColor backdrop-blur rounded-lg')}
-      >
+      <div className={classNames('workspace-composer-input relative rounded-lg')}>
         <textarea
           ref={props.textareaRef}
           aria-label="Message UnQOps"
@@ -234,7 +232,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             />
           )}
         </ClientOnly>
-        <div className="flex justify-between items-center text-sm p-4 pt-2">
+        <div className="workspace-composer-toolbar flex justify-between items-center text-sm p-4 pt-2">
           <div className="flex gap-1 items-center">
             <ColorSchemeDialog designScheme={props.designScheme} setDesignScheme={props.setDesignScheme} />
             <McpTools />

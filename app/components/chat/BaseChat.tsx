@@ -346,17 +346,19 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
         data-chat-visible={showChat}
       >
         <ClientOnly>{() => <Menu />}</ClientOnly>
-        <div className="flex flex-col lg:flex-row overflow-y-auto w-full h-full">
-          <div className={classNames(styles.Chat, 'flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full')}>
+        <div className="workspace-chat-layout flex flex-col lg:flex-row overflow-y-auto w-full h-full">
+          <div
+            className={classNames(
+              styles.Chat,
+              'workspace-chat flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full',
+            )}
+          >
             {!chatStarted && (
               <div id="intro" className="workspace-intro">
-                <span className="workspace-eyebrow">
-                  <span aria-hidden="true" /> YOUR AI WORKSPACE
-                </span>
-                <h1 className="workspace-title">Make space for your next idea.</h1>
-                <p className="workspace-subtitle">
-                  Describe what you want to build, or bring an existing project into your workspace.
-                </p>
+                <h1 className="workspace-title">
+                  Let’s create <span>something great</span>
+                </h1>
+                <p className="workspace-subtitle">Good ideas start here. What will you build today?</p>
               </div>
             )}
             <StickToBottom
@@ -471,7 +473,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
             </StickToBottom>
             <div className="flex flex-col justify-center">
               {!chatStarted && (
-                <div className="flex justify-center gap-2">
+                <div className="workspace-imports flex justify-center gap-2">
                   {ImportButtons(importChat)}
                   <GitCloneButton importChat={importChat} />
                 </div>

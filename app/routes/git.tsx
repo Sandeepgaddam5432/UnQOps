@@ -4,6 +4,7 @@ import { ClientOnly } from 'remix-utils/client-only';
 import { BaseChat } from '~/components/chat/BaseChat';
 import { GitUrlImport } from '~/components/git/GitUrlImport.client';
 import { Header } from '~/components/header/Header';
+import { WorkspaceShell } from '~/components/layout/WorkspaceShell';
 
 export const meta: MetaFunction = () => {
   return [
@@ -18,9 +19,11 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export default function Index() {
   return (
-    <div className="flex flex-col h-full w-full bg-unqops-elements-background-depth-1">
-      <Header />
-      <ClientOnly fallback={<BaseChat />}>{() => <GitUrlImport />}</ClientOnly>
-    </div>
+    <WorkspaceShell>
+      <div className="workspace-page flex flex-col h-full w-full bg-unqops-elements-background-depth-1">
+        <Header />
+        <ClientOnly fallback={<BaseChat />}>{() => <GitUrlImport />}</ClientOnly>
+      </div>
+    </WorkspaceShell>
   );
 }
