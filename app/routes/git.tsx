@@ -4,10 +4,12 @@ import { ClientOnly } from 'remix-utils/client-only';
 import { BaseChat } from '~/components/chat/BaseChat';
 import { GitUrlImport } from '~/components/git/GitUrlImport.client';
 import { Header } from '~/components/header/Header';
-import BackgroundRays from '~/components/ui/BackgroundRays';
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'unqops' }, { name: 'description', content: 'Talk with unqops, an AI assistant from StackBlitz' }];
+  return [
+    { title: 'UnQOps — AI workspace' },
+    { name: 'description', content: 'Build and explore projects with the UnQOps AI workspace.' },
+  ];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -17,7 +19,6 @@ export async function loader(args: LoaderFunctionArgs) {
 export default function Index() {
   return (
     <div className="flex flex-col h-full w-full bg-unqops-elements-background-depth-1">
-      <BackgroundRays />
       <Header />
       <ClientOnly fallback={<BaseChat />}>{() => <GitUrlImport />}</ClientOnly>
     </div>

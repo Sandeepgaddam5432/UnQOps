@@ -303,6 +303,23 @@ export const Menu = () => {
     };
   }, [isSettingsOpen]);
 
+  useEffect(() => {
+    const toggleNavigation = () => setOpen((current) => !current);
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    window.addEventListener('unqops:toggle-navigation', toggleNavigation);
+    window.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      window.removeEventListener('unqops:toggle-navigation', toggleNavigation);
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, []);
+
   const handleDuplicate = async (id: string) => {
     await duplicateCurrentChat(id);
     loadEntries(); // Reload the list after duplication
@@ -329,7 +346,7 @@ export const Menu = () => {
         initial="closed"
         animate={open ? 'open' : 'closed'}
         variants={menuVariants}
-        style={{ width: '340px' }}
+        style={{ width: 'min(340px, 100vw)' }}
         className={classNames(
           'flex selection-accent flex-col side-menu fixed top-0 h-full rounded-r-2xl',
           'bg-white dark:bg-gray-950 border-r border-unqops-elements-borderColor',
