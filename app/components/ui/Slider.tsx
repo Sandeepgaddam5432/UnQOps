@@ -22,7 +22,7 @@ export const Slider = genericMemo(<T,>({ selected, options, setSelected }: Slide
   const isMiddleSelected = hasMiddle && options.middle ? selected === options.middle.value : false;
 
   return (
-    <div className="flex items-center flex-wrap shrink-0 gap-1 bg-unqops-elements-background-depth-1 overflow-hidden rounded-full p-1">
+    <div className="flex items-center flex-wrap shrink-0 gap-1 bg-unqops-elements-background-depth-3 overflow-hidden rounded-xl p-1">
       <SliderButton selected={isLeftSelected} setSelected={() => setSelected?.(options.left.value)}>
         {options.left.text}
       </SliderButton>
@@ -52,11 +52,13 @@ interface SliderButtonProps {
 const SliderButton = memo(({ selected, children, setSelected }: SliderButtonProps) => {
   return (
     <button
+      type="button"
       onClick={setSelected}
+      aria-pressed={selected}
       className={classNames(
-        'bg-transparent text-sm px-2.5 py-0.5 rounded-full relative',
+        'bg-transparent text-sm px-3 py-1.5 rounded-lg relative',
         selected
-          ? 'text-unqops-elements-item-contentAccent'
+          ? 'text-unqops-elements-textPrimary font-semibold'
           : 'text-unqops-elements-item-contentDefault hover:text-unqops-elements-item-contentActive',
       )}
     >
@@ -65,7 +67,7 @@ const SliderButton = memo(({ selected, children, setSelected }: SliderButtonProp
         <motion.span
           layoutId="pill-tab"
           transition={{ duration: 0.2, ease: cubicEasingFn }}
-          className="absolute inset-0 z-0 bg-unqops-elements-item-backgroundAccent rounded-full"
+          className="absolute inset-0 z-0 bg-unqops-elements-background-depth-2 rounded-lg shadow-sm"
         ></motion.span>
       )}
     </button>

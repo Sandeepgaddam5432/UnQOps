@@ -37,3 +37,12 @@ UnQOps implementations; Foundry's mock data and template routes are not imported
 This is a visual adaptation, not a claim that every Foundry template screen or
 feature exists in UnQOps. Google Fonts requires network access and falls back to
 system fonts.
+
+### Shared-surface modernization
+
+The settings overview now uses keyboard-operable, status-aware tiles. Shared
+buttons, inputs, cards, dialogs, segmented controls, chat artifacts, preview
+chrome and workbench panels use the existing palette-aware tokens. These changes
+preserve each screen's existing actions and data handling. Some individual
+integration and settings screens still have locally defined colors and layouts;
+a full screen-by-screen visual and accessibility audit remains necessary.

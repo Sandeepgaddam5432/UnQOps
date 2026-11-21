@@ -34,11 +34,7 @@ interface ControlPanelProps {
 // Beta status for experimental features
 const BETA_TABS = new Set<TabType>(['service-status', 'local-providers', 'mcp']);
 
-const BetaLabel = () => (
-  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-purple-500/10 dark:bg-purple-500/20">
-    <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">BETA</span>
-  </div>
-);
+const BetaLabel = () => <span className="settings-beta">BETA</span>;
 
 export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
   // State
@@ -224,7 +220,7 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
             >
               <div className="relative z-10 flex flex-col h-full">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="settings-header flex items-center justify-between px-6 py-4 border-b border-unqops-elements-borderColor">
                   <div className="flex items-center space-x-4">
                     {(activeTab || showTabManagement) && (
                       <button
@@ -235,7 +231,7 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
                         <div className="i-ph:arrow-left w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-purple-500 transition-colors" />
                       </button>
                     )}
-                    <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <DialogTitle className="text-xl font-semibold text-unqops-elements-textPrimary">
                       {showTabManagement ? 'Tab Management' : activeTab ? TAB_LABELS[activeTab] : 'Control Panel'}
                     </DialogTitle>
                   </div>
@@ -273,21 +269,18 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
                 >
                   <div
                     className={classNames(
-                      'p-6 transition-opacity duration-150',
+                      'settings-content p-6 transition-opacity duration-150',
                       activeTab || showTabManagement ? 'opacity-100' : 'opacity-100',
                     )}
                   >
                     {activeTab ? (
                       getTabComponent(activeTab)
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
+                      <div className="settings-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative">
                         {visibleTabs.map((tab, index) => (
                           <div
                             key={tab.id}
-                            className={classNames(
-                              'aspect-[1.5/1] transition-transform duration-100 ease-out',
-                              'hover:scale-[1.01]',
-                            )}
+                            className="min-w-0"
                             style={{
                               animationDelay: `${index * 30}ms`,
                               animation: open ? 'fadeInUp 200ms ease-out forwards' : 'none',

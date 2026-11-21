@@ -86,8 +86,8 @@ body {
     'Segoe UI',
     sans-serif;
 }
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--workspace-focus);
+:is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--unqops-elements-textPrimary);
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -785,5 +785,149 @@ body {
     min-width: 36px;
     min-height: 36px;
     padding: 8px;
+  }
+}
+
+// Shared semantic surfaces keep chat, preview and editor aligned with each palette.
+:root[data-theme='light'],
+:root[data-theme='dark'] {
+  --unqops-elements-artifacts-background: var(--unqops-elements-bg-depth-2);
+  --unqops-elements-artifacts-backgroundHover: var(--unqops-elements-bg-depth-3);
+  --unqops-elements-actions-background: var(--unqops-elements-bg-depth-2);
+  --unqops-elements-messages-background: var(--unqops-elements-bg-depth-3);
+  --unqops-elements-messages-inlineCode-background: var(--unqops-elements-bg-depth-3);
+  --unqops-elements-messages-inlineCode-text: var(--unqops-elements-textPrimary);
+  --unqops-elements-dividerColor: var(--unqops-elements-borderColor);
+  --unqops-elements-preview-addressBar-background: var(--unqops-elements-bg-depth-3);
+  --unqops-elements-preview-addressBar-backgroundHover: var(--unqops-elements-bg-depth-4);
+  --unqops-elements-preview-addressBar-backgroundActive: var(--unqops-elements-bg-depth-2);
+  --unqops-elements-terminals-background: var(--unqops-elements-bg-depth-1);
+  --unqops-elements-icon-primary: var(--unqops-elements-textPrimary);
+  --unqops-elements-icon-secondary: var(--unqops-elements-textSecondary);
+  --unqops-elements-icon-tertiary: var(--unqops-elements-textTertiary);
+}
+.workspace-primary-button {
+  background: var(--studio-primary);
+  color: var(--studio-primary-fg);
+}
+.workspace-primary-button:hover {
+  filter: brightness(1.15);
+}
+.workbench-surface {
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgb(0 0 0 / 0.08);
+}
+.workbench-toolbar {
+  min-height: 52px;
+  background: var(--unqops-elements-bg-depth-2);
+}
+.settings-header {
+  background: var(--unqops-elements-bg-depth-2);
+  min-height: 72px;
+}
+.settings-content {
+  background: var(--unqops-elements-bg-depth-1);
+}
+.settings-tile {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  min-height: 142px;
+  border: 1px solid var(--unqops-elements-borderColor);
+  border-radius: 16px;
+  background: var(--unqops-elements-bg-depth-2);
+  color: var(--unqops-elements-textPrimary);
+  padding: 20px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+.settings-tile:hover,
+.settings-tile-active {
+  border-color: var(--workspace-focus);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.07);
+  transform: translateY(-2px);
+}
+.settings-tile:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+}
+.settings-tile-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--unqops-elements-bg-depth-3);
+  color: var(--unqops-elements-textPrimary);
+  font-size: 21px;
+}
+.settings-tile-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 6px;
+  padding-top: 2px;
+}
+.settings-tile-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.settings-tile-description {
+  color: var(--unqops-elements-textSecondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.settings-tile-status {
+  color: var(--unqops-elements-textPrimary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.settings-tile-arrow {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  color: var(--unqops-elements-textSecondary);
+}
+.settings-beta {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--unqops-elements-bg-depth-3);
+  color: var(--unqops-elements-textSecondary);
+  font-size: 10px;
+  font-weight: 700;
+}
+.settings-tile-tooltip {
+  z-index: 10000;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #18181b;
+  color: #fff;
+  font-size: 12px;
+}
+@media (max-width: 639px) {
+  .settings-header {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .settings-content {
+    padding: 16px;
+  }
+  .settings-tile {
+    min-height: 110px;
+    padding: 16px;
+  }
+  .workbench-surface {
+    border-radius: 12px;
   }
 }

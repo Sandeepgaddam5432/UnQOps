@@ -383,8 +383,8 @@ export const Workbench = memo(
             )}
           >
             <div className="absolute inset-0 px-2 lg:px-4">
-              <div className="h-full flex flex-col bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor shadow-sm rounded-lg overflow-hidden">
-                <div className="flex items-center px-3 py-2 border-b border-unqops-elements-borderColor gap-1.5 overflow-x-auto">
+              <div className="workbench-surface h-full flex flex-col bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor shadow-sm rounded-lg overflow-hidden">
+                <div className="workbench-toolbar flex items-center px-3 py-2 border-b border-unqops-elements-borderColor gap-1.5 overflow-x-auto">
                   <button
                     className={`${showChat ? 'i-ph:sidebar-simple-fill' : 'i-ph:sidebar-simple'} text-lg text-unqops-elements-textSecondary mr-1`}
                     disabled={!canHideChat || isSmallViewport}
@@ -416,9 +416,9 @@ export const Workbench = memo(
                         <DropdownMenu.Content
                           className={classNames(
                             'min-w-[240px] z-[250]',
-                            'bg-white dark:bg-[#141414]',
-                            'rounded-lg shadow-lg',
-                            'border border-gray-200/50 dark:border-gray-800/50',
+                            'bg-unqops-elements-background-depth-2',
+                            'rounded-xl shadow-lg',
+                            'border border-unqops-elements-borderColor',
                             'animate-in fade-in-0 zoom-in-95',
                             'py-1',
                           )}
