@@ -71,6 +71,12 @@ docker build . --target unqops-development
 docker compose --profile development up
 ```
 
+## Design direction
+
+The workspace uses neutral light and dark surfaces, compact controls and a teal focus accent. Theme selection is available in the navigation menu. See [design system](docs/design-system.md) and [analysis](docs/analysis/unqops-analysis.md) for the current scope and remaining work.
+
+Useful checks: `pnpm run lint`, `pnpm run test`, `pnpm run build`, and `pnpm run typecheck` (the latter expects the generated server build). Copy `.env.example` to `.env.local` and configure only the integrations you use. Never commit API keys.
+
 ## 🔑 Configuration
 
 ### Setting Up API Keys
@@ -153,7 +159,7 @@ pnpm run start            # Run production build locally
 UnQOps is built with modern web technologies:
 
 - **Frontend**: React + Vite + TypeScript
-- **Styling**: Tailwind CSS
+- **Styling**: UnoCSS utilities and SCSS
 - **Runtime**: WebContainers API for browser-based execution
 - **AI Integration**: Vercel AI SDK for multi-provider support
 - **Deployment**: Cloudflare Pages + Workers
