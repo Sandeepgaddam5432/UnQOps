@@ -87,7 +87,7 @@ export function EmptyState({
     <div
       className={classNames(
         'flex flex-col items-center justify-center',
-        'text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark',
+        'text-unqops-elements-textSecondary',
         'bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg',
         styles.container,
         className,
@@ -100,13 +100,7 @@ export function EmptyState({
           styles.icon.container,
         )}
       >
-        <span
-          className={classNames(
-            icon,
-            styles.icon.size,
-            'text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark',
-          )}
-        />
+        <span className={classNames(icon, styles.icon.size, 'text-unqops-elements-textTertiary')} />
       </div>
 
       {/* Title */}
@@ -114,12 +108,7 @@ export function EmptyState({
 
       {/* Description */}
       {description && (
-        <p
-          className={classNames(
-            'text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark text-center max-w-xs',
-            styles.description,
-          )}
-        >
+        <p className={classNames('text-unqops-elements-textTertiary text-center max-w-xs', styles.description)}>
           {description}
         </p>
       )}

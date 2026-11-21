@@ -829,7 +829,9 @@ export default function GitHubConnection() {
                       </div>
 
                       <div>
-                        <h5 className="text-sm font-medium text-unqops-elements-textPrimary mb-2">Contribution Stats</h5>
+                        <h5 className="text-sm font-medium text-unqops-elements-textPrimary mb-2">
+                          Contribution Stats
+                        </h5>
                         <div className="grid grid-cols-3 gap-4">
                           {[
                             {

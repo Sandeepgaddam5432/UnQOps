@@ -39,32 +39,28 @@ export function CodeBlock({
   return (
     <div
       className={classNames(
-        'rounded-lg overflow-hidden border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark',
+        'rounded-lg overflow-hidden border border-unqops-elements-borderColor',
         'bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3',
         className,
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-unqops-elements-background-depth-3 dark:bg-unqops-elements-background-depth-4 border-b border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark">
+      <div className="flex items-center justify-between px-4 py-2 bg-unqops-elements-background-depth-3 dark:bg-unqops-elements-background-depth-4 border-b border-unqops-elements-borderColor">
         <div className="flex items-center gap-2">
           {filename && (
             <>
               <FileIcon filename={filename} size="sm" />
-              <span className="text-xs font-medium text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark">
-                {filename}
-              </span>
+              <span className="text-xs font-medium text-unqops-elements-textSecondary">{filename}</span>
             </>
           )}
           {language && !filename && (
-            <span className="text-xs font-medium text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark uppercase">
-              {language}
-            </span>
+            <span className="text-xs font-medium text-unqops-elements-textSecondary uppercase">{language}</span>
           )}
         </div>
         <Tooltip content={copied ? 'Copied!' : 'Copy code'}>
           <motion.button
             onClick={handleCopy}
-            className="p-1.5 rounded-md text-unqops-elements-textTertiary hover:text-unqops-elements-textSecondary dark:text-unqops-elements-textTertiary-dark dark:hover:text-unqops-elements-textSecondary-dark hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3 transition-colors"
+            className="p-1.5 rounded-md text-unqops-elements-textTertiary hover:text-unqops-elements-textSecondary hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3 transition-colors"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -86,13 +82,11 @@ export function CodeBlock({
                 )}
               >
                 {showLineNumbers && (
-                  <td className="py-1 pl-4 pr-2 text-right select-none text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark border-r border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark">
+                  <td className="py-1 pl-4 pr-2 text-right select-none text-unqops-elements-textTertiary border-r border-unqops-elements-borderColor">
                     <span className="inline-block min-w-[1.5rem] text-xs">{index + 1}</span>
                   </td>
                 )}
-                <td className="py-1 pl-4 pr-4 text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark whitespace-pre">
-                  {line || ' '}
-                </td>
+                <td className="py-1 pl-4 pr-4 text-unqops-elements-textPrimary whitespace-pre">{line || ' '}</td>
               </tr>
             ))}
           </tbody>

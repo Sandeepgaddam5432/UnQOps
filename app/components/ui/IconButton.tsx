@@ -73,7 +73,7 @@ function getIconSize(size: IconSize) {
   if (size === 'sm') {
     return 'text-sm';
   } else if (size === 'md') {
-    return 'text-md';
+    return 'text-base';
   } else if (size === 'lg') {
     return 'text-lg';
   } else if (size === 'xl') {

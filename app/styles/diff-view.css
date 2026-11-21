@@ -1,6 +1,6 @@
 .diff-panel-content {
   scrollbar-width: thin;
-  scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+  scrollbar-color: rgb(var(--od-border-strong)) transparent;
 }
 
 .diff-panel-content::-webkit-scrollbar {
@@ -13,13 +13,13 @@
 }
 
 .diff-panel-content::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.5);
+  background-color: rgb(var(--od-border-strong));
   border-radius: 4px;
   border: 2px solid transparent;
 }
 
 .diff-panel-content::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(155, 155, 155, 0.7);
+  background-color: rgb(var(--od-fg-soft));
 }
 
 /* Hide scrollbar for the left panel when not hovered */
@@ -31,25 +31,27 @@
   scrollbar-width: none;
 }
 
-/* Estilos para as linhas de diff */
-.diff-block-added {
-  @apply bg-green-500/20 border-l-4 border-green-500;
+/* Diff line colors - soft semantic backgrounds that follow the Theme Studio */
+.diff-block-added,
+.diff-added {
+  background-color: rgba(var(--od-success), 0.14);
+  border-left: 4px solid rgb(var(--od-success));
 }
 
-.diff-block-removed {
-  @apply bg-red-500/20 border-l-4 border-red-500;
+.diff-block-removed,
+.diff-removed {
+  background-color: rgba(var(--od-danger), 0.12);
+  border-left: 4px solid rgb(var(--od-danger));
 }
 
-/* Melhorar contraste para mudanças */
 .diff-panel-content .group:hover .diff-block-added {
-  @apply bg-green-500/30;
+  background-color: rgba(var(--od-success), 0.22);
 }
 
 .diff-panel-content .group:hover .diff-block-removed {
-  @apply bg-red-500/30;
+  background-color: rgba(var(--od-danger), 0.2);
 }
 
-/* Estilos unificados para ambas as visualizações */
 .diff-line {
   @apply flex group min-w-fit transition-colors duration-150;
 }
@@ -60,13 +62,4 @@
 
 .diff-line-content {
   @apply px-4 py-0.5 font-mono whitespace-pre flex-1 group-hover:bg-unqops-elements-background-depth-2 text-unqops-elements-textPrimary;
-}
-
-/* Cores específicas para adições/remoções */
-.diff-added {
-  @apply bg-green-500/20 border-l-4 border-green-500;
-}
-
-.diff-removed {
-  @apply bg-red-500/20 border-l-4 border-red-500;
 }

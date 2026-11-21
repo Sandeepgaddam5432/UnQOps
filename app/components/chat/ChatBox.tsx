@@ -159,7 +159,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             selected for inspection
           </div>
           <button
-            className="bg-transparent text-accent-500 pointer-auto"
+            className="bg-transparent text-accent-500 pointer-events-auto"
             onClick={() => props.setSelectedElement?.(null)}
           >
             Clear
@@ -167,7 +167,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
         </div>
       )}
       <div
-        className={classNames('relative shadow-xs border border-unqops-elements-borderColor backdrop-blur rounded-lg')}
+        className={classNames('relative shadow-sm border border-unqops-elements-borderColor backdrop-blur rounded-lg')}
       >
         <textarea
           ref={props.textareaRef}
@@ -236,7 +236,9 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             minHeight: props.TEXTAREA_MIN_HEIGHT,
             maxHeight: props.TEXTAREA_MAX_HEIGHT,
           }}
-          placeholder={props.chatMode === 'build' ? 'How can unqops help you today?' : 'What would you like to discuss?'}
+          placeholder={
+            props.chatMode === 'build' ? 'How can unqops help you today?' : 'What would you like to discuss?'
+          }
           translate="no"
         />
         <ClientOnly>

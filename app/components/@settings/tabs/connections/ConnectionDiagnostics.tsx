@@ -378,7 +378,7 @@ export default function ConnectionDiagnostics() {
         {/* Vercel Connection Card */}
         <div className="p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 dark:hover:border-unqops-elements-borderColorActive/70 transition-all duration-200 h-[180px] flex flex-col">
           <div className="flex items-center gap-2">
-            <div className="i-si:vercel text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent w-4 h-4" />
+            <div className="i-ph:triangle-fill text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent w-4 h-4" />
             <div className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
               Vercel Connection
             </div>
@@ -443,7 +443,7 @@ export default function ConnectionDiagnostics() {
         {/* Supabase Connection Card */}
         <div className="p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 dark:hover:border-unqops-elements-borderColorActive/70 transition-all duration-200 h-[180px] flex flex-col">
           <div className="flex items-center gap-2">
-            <div className="i-si:supabase text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent w-4 h-4" />
+            <div className="i-ph:database text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent w-4 h-4" />
             <div className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
               Supabase Connection
             </div>
@@ -535,7 +535,7 @@ export default function ConnectionDiagnostics() {
           variant="outline"
           className="flex items-center gap-2 hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <div className="i-si:netlify w-4 h-4" />
+          <div className="i-unqops:netlify w-4 h-4" />
           Reset Netlify
         </Button>
 
@@ -545,7 +545,7 @@ export default function ConnectionDiagnostics() {
           variant="outline"
           className="flex items-center gap-2 hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <div className="i-si:vercel w-4 h-4" />
+          <div className="i-ph:triangle-fill w-4 h-4" />
           Reset Vercel
         </Button>
 
@@ -555,7 +555,7 @@ export default function ConnectionDiagnostics() {
           variant="outline"
           className="flex items-center gap-2 hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <div className="i-si:supabase w-4 h-4" />
+          <div className="i-ph:database w-4 h-4" />
           Reset Supabase
         </Button>
       </div>

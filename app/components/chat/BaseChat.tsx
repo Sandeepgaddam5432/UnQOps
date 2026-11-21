@@ -353,7 +353,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                 <h1 className="text-3xl lg:text-6xl font-bold text-unqops-elements-textPrimary mb-4 animate-fade-in">
                   Where ideas begin
                 </h1>
-                <p className="text-md lg:text-xl mb-8 text-unqops-elements-textSecondary animate-fade-in animation-delay-200">
+                <p className="text-base lg:text-xl mb-8 text-unqops-elements-textSecondary animate-fade-in animation-delay-200">
                   Bring ideas to life in seconds or get help on existing projects.
                 </p>
               </div>

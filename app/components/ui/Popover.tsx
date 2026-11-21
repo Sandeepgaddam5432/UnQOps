@@ -22,7 +22,7 @@ export default ({
         className="bg-unqops-elements-background-depth-2 text-unqops-elements-item-contentAccent p-2 rounded-md shadow-xl z-workbench"
       >
         {children}
-        <Popover.Arrow className="bg-unqops-elements-item-background-depth-2" />
+        <Popover.Arrow className="bg-unqops-elements-background-depth-2" />
       </Popover.Content>
     </Popover.Portal>
   </Popover.Root>

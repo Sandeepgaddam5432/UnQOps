@@ -456,7 +456,7 @@ export default function LocalProvidersTab() {
                   </motion.div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-md font-semibold text-unqops-elements-textPrimary">{provider.name}</h3>
+                      <h3 className="text-base font-semibold text-unqops-elements-textPrimary">{provider.name}</h3>
                       <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-500">Local</span>
                     </div>
                     <p className="text-sm text-unqops-elements-textSecondary mt-1">
@@ -665,7 +665,7 @@ export default function LocalProvidersTab() {
                       </motion.div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-md font-semibold text-unqops-elements-textPrimary">{provider.name}</h3>
+                          <h3 className="text-base font-semibold text-unqops-elements-textPrimary">{provider.name}</h3>
                           <div className="flex gap-1">
                             <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-500">
                               Local

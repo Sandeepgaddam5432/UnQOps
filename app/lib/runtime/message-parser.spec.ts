@@ -38,7 +38,7 @@ describe('StreamingMessageParser', () => {
       ['Foo bar <b', 'Foo bar '],
       ['Foo bar <ba', 'Foo bar <ba'],
       ['Foo bar <bol', 'Foo bar '],
-      ['Foo bar <unqops', 'Foo bar '],
+      ['Foo bar <bolt', 'Foo bar '],
       ['Foo bar <bolta', 'Foo bar <bolta'],
       ['Foo bar <boltA', 'Foo bar '],
       ['Foo bar <boltArtifacs></boltArtifact>', 'Foo bar <boltArtifacs></boltArtifact>'],

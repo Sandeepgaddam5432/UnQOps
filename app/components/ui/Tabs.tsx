@@ -11,7 +11,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={classNames(
-      'inline-flex h-10 items-center justify-center rounded-md bg-unqops-elements-background-depth-1 dark:bg-unqops-elements-background-depth-3-dark p-1 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark',
+      'inline-flex h-10 items-center justify-center rounded-md bg-unqops-elements-background-depth-1 p-1 text-unqops-elements-textSecondary border border-unqops-elements-borderColor',
       className,
     )}
     {...props}
@@ -26,7 +26,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={classNames(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-unqops-elements-background dark:ring-offset-unqops-elements-background-dark transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unqops-elements-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-unqops-elements-background-depth-0 dark:data-[state=active]:bg-unqops-elements-background-depth-2-dark data-[state=active]:text-unqops-elements-textPrimary dark:data-[state=active]:text-unqops-elements-textPrimary-dark data-[state=active]:shadow-sm',
+      'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-unqops-elements-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unqops-elements-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-unqops-elements-background-depth-1 dark:data-[state= data-[state=active]:text-unqops-elements-textPrimary dark:data-[state= data-[state=active]:shadow-sm',
       className,
     )}
     {...props}

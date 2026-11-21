@@ -1,5 +1,7 @@
 .Toastify__toast {
-  --at-apply: shadow-md;
+  box-shadow: var(--od-shadow-md);
+  border-radius: var(--od-r-box);
+  font-family: var(--od-font-body);
 
   background-color: var(--unqops-elements-bg-depth-2);
   color: var(--unqops-elements-textPrimary);

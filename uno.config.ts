@@ -87,6 +87,24 @@ const BASE_COLORS = {
   },
 };
 
+const od = (name: string) => `rgb(var(--od-${name}) / <alpha-value>)`;
+
+/** Foundry semantic palette. Every entry supports opacity modifiers, e.g. `bg-od-bg/85`. */
+const OD_COLORS = {
+  bg: od('bg'),
+  surface: od('surface'),
+  subtle: od('subtle'),
+  border: { DEFAULT: od('border'), strong: od('border-strong') },
+  fg: { DEFAULT: od('fg'), muted: od('fg-muted'), soft: od('fg-soft') },
+  primary: { DEFAULT: od('primary'), fg: od('primary-fg') },
+  secondary: { DEFAULT: od('secondary'), fg: od('secondary-fg') },
+  accent: { DEFAULT: od('accent'), fg: od('accent-fg') },
+  success: od('success'),
+  warning: od('warning'),
+  danger: od('danger'),
+  info: od('info'),
+};
+
 const COLOR_PRIMITIVES = {
   ...BASE_COLORS,
   alpha: {
@@ -104,6 +122,29 @@ export default defineConfig({
     'transition-theme': 'transition-[background-color,border-color,color] duration-150 unqops-ease-cubic-bezier',
     kdb: 'bg-unqops-elements-code-background text-unqops-elements-code-text py-1 px-1.5 rounded-md',
     'max-w-chat': 'max-w-[var(--chat-max-width)]',
+
+    // Foundry design-system shortcuts
+    'od-focus-ring':
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-od-primary/40 focus-visible:ring-offset-0',
+    'od-touch-target': 'min-h-11 min-w-11 sm:min-h-9 sm:min-w-9',
+    'od-btn':
+      'inline-flex items-center justify-center gap-2 rounded-od-control px-4 min-h-11 sm:min-h-9 text-sm font-medium transition active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none od-focus-ring',
+    'od-btn-primary': 'od-btn bg-od-primary text-od-primary-fg shadow-od-sm hover:bg-od-primary/90',
+    'od-btn-secondary': 'od-btn bg-od-secondary text-od-secondary-fg border border-od-border hover:border-od-border-strong',
+    'od-btn-outline': 'od-btn border border-od-border-strong text-od-fg bg-transparent hover:bg-od-subtle',
+    'od-btn-ghost': 'od-btn text-od-fg-muted hover:text-od-fg hover:bg-od-subtle',
+    'od-btn-accent': 'od-btn bg-od-accent text-od-accent-fg shadow-od-sm hover:brightness-95',
+    'od-btn-danger': 'od-btn bg-od-danger text-white shadow-od-sm hover:brightness-95',
+    'od-card': 'rounded-od-card border border-od-border bg-od-surface shadow-od-sm',
+    'od-panel': 'rounded-od-box border border-od-border bg-od-surface shadow-od-md',
+    'od-field':
+      'w-full rounded-od-field border border-od-border bg-od-bg px-3 min-h-11 sm:min-h-9 text-sm text-od-fg placeholder:text-od-fg-soft transition focus:outline-none focus:border-od-primary focus:ring-2 focus:ring-od-primary/15',
+    'od-badge': 'inline-flex items-center gap-1 rounded-od-badge border border-od-border bg-od-subtle px-2.5 py-0.5 text-xs font-medium text-od-fg-muted',
+    'od-badge-success': 'od-badge border-od-success/30 bg-od-success/12 text-od-success',
+    'od-badge-warning': 'od-badge border-od-warning/30 bg-od-warning/12 text-od-warning',
+    'od-badge-danger': 'od-badge border-od-danger/30 bg-od-danger/12 text-od-danger',
+    'od-badge-info': 'od-badge border-od-info/30 bg-od-info/12 text-od-info',
+    'od-kbd': 'inline-flex items-center rounded-od-control border border-od-border bg-od-subtle px-1.5 py-0.5 font-od-mono text-xs text-od-fg-muted',
   },
   rules: [
     /**
@@ -115,11 +156,17 @@ export default defineConfig({
   theme: {
     colors: {
       ...COLOR_PRIMITIVES,
+      od: OD_COLORS,
       unqops: {
         elements: {
           borderColor: 'var(--unqops-elements-borderColor)',
           borderColorActive: 'var(--unqops-elements-borderColorActive)',
+          // Semantic aliases used across the app
+          border: 'var(--unqops-elements-borderColor)',
+          focus: 'var(--unqops-elements-borderColorActive)',
+          ring: 'var(--unqops-elements-borderColorActive)',
           background: {
+            DEFAULT: 'var(--unqops-elements-bg-depth-1)',
             depth: {
               1: 'var(--unqops-elements-bg-depth-1)',
               2: 'var(--unqops-elements-bg-depth-2)',
@@ -193,6 +240,8 @@ export default defineConfig({
             primary: 'var(--unqops-elements-icon-primary)',
             secondary: 'var(--unqops-elements-icon-secondary)',
             tertiary: 'var(--unqops-elements-icon-tertiary)',
+            warning: 'rgb(var(--od-warning))',
+            info: 'rgb(var(--od-info))',
           },
           preview: {
             addressBar: {
@@ -229,6 +278,29 @@ export default defineConfig({
       },
     },
   },
+  extendTheme: (theme: any) => ({
+    ...theme,
+    borderRadius: {
+      ...theme.borderRadius,
+      'od-control': 'var(--od-r-control)',
+      'od-field': 'var(--od-r-field)',
+      'od-card': 'var(--od-r-card)',
+      'od-box': 'var(--od-r-box)',
+      'od-badge': 'var(--od-r-badge)',
+    },
+    boxShadow: {
+      ...theme.boxShadow,
+      'od-sm': 'var(--od-shadow-sm)',
+      'od-md': 'var(--od-shadow-md)',
+      'od-lg': 'var(--od-shadow-lg)',
+    },
+    fontFamily: {
+      ...theme.fontFamily,
+      'od-heading': 'var(--od-font-heading)',
+      'od-body': 'var(--od-font-body)',
+      'od-mono': 'var(--od-font-mono)',
+    },
+  }),
   transformers: [transformerDirectives()],
   presets: [
     presetUno({

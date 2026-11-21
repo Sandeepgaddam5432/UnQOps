@@ -69,7 +69,7 @@ export const Messages = forwardRef<HTMLDivElement, MessagesProps>(
                     'mt-4': !isFirst,
                   })}
                 >
-                  <div className="grid grid-col-1 w-full">
+                  <div className="grid grid-cols-1 w-full">
                     {isUserMessage ? (
                       <UserMessage content={content} parts={parts} />
                     ) : (

@@ -26,17 +26,15 @@ export function StatsDialog({ isOpen, onClose, onConfirm, stats, isLargeRepo }: 
             transition={{ duration: 0.2 }}
             className="w-[90vw] md:w-[500px]"
           >
-            <Dialog.Content className="bg-white dark:bg-unqops-elements-background-depth-1 rounded-lg border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark shadow-xl">
+            <Dialog.Content className="bg-white dark:bg-unqops-elements-background-depth-1 rounded-lg border border-unqops-elements-borderColor shadow-xl">
               <div className="p-6 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-unqops-elements-background-depth-3 flex items-center justify-center text-purple-500">
                     <span className="i-ph:git-branch w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark">
-                      Repository Overview
-                    </h3>
-                    <p className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark">
+                    <h3 className="text-lg font-medium text-unqops-elements-textPrimary">Repository Overview</h3>
+                    <p className="text-sm text-unqops-elements-textSecondary">
                       Review repository details before importing
                     </p>
                   </div>
@@ -56,10 +54,10 @@ export function StatsDialog({ isOpen, onClose, onConfirm, stats, isLargeRepo }: 
                   </div>
                 )}
               </div>
-              <div className="border-t border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark p-4 flex justify-end gap-3 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-b-lg">
+              <div className="border-t border-unqops-elements-borderColor p-4 flex justify-end gap-3 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-b-lg">
                 <motion.button
                   onClick={onClose}
-                  className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-3 dark:bg-unqops-elements-background-depth-4 text-unqops-elements-textSecondary hover:text-unqops-elements-textPrimary dark:text-unqops-elements-textSecondary-dark dark:hover:text-unqops-elements-textPrimary-dark transition-colors"
+                  className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-3 dark:bg-unqops-elements-background-depth-4 text-unqops-elements-textSecondary hover:text-unqops-elements-textPrimary transition-colors"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

@@ -281,7 +281,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
               className="w-[90vw] md:w-[600px] max-h-[85vh] overflow-y-auto"
             >
               <Dialog.Content
-                className="bg-white dark:bg-unqops-elements-background-depth-1 rounded-lg border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark shadow-xl"
+                className="bg-white dark:bg-unqops-elements-background-depth-1 rounded-lg border border-unqops-elements-borderColor shadow-xl"
                 aria-describedby="success-dialog-description"
               >
                 <div className="p-6 space-y-4">
@@ -291,13 +291,10 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                         <div className="i-ph:check-circle w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark">
+                        <h3 className="text-lg font-medium text-unqops-elements-textPrimary">
                           Successfully pushed to GitHub
                         </h3>
-                        <p
-                          id="success-dialog-description"
-                          className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark"
-                        >
+                        <p id="success-dialog-description" className="text-sm text-unqops-elements-textSecondary">
                           Your code is now available on GitHub
                         </p>
                       </div>
@@ -305,7 +302,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                     <Dialog.Close asChild>
                       <button
                         onClick={handleClose}
-                        className="p-2 rounded-lg transition-all duration-200 ease-in-out bg-transparent text-unqops-elements-textTertiary hover:text-unqops-elements-textPrimary dark:text-unqops-elements-textTertiary-dark dark:hover:text-unqops-elements-textPrimary-dark hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3 focus:outline-none focus:ring-2 focus:ring-unqops-elements-borderColor dark:focus:ring-unqops-elements-borderColor-dark"
+                        className="p-2 rounded-lg transition-all duration-200 ease-in-out bg-transparent text-unqops-elements-textTertiary hover:text-unqops-elements-textPrimary hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3 focus:outline-none focus:ring-2 focus:ring-unqops-elements-borderColor"
                       >
                         <span className="i-ph:x block w-5 h-5" aria-hidden="true" />
                         <span className="sr-only">Close dialog</span>
@@ -313,13 +310,13 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                     </Dialog.Close>
                   </div>
 
-                  <div className="bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg p-4 text-left border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark">
-                    <p className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark mb-2 flex items-center gap-2">
+                  <div className="bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg p-4 text-left border border-unqops-elements-borderColor">
+                    <p className="text-sm font-medium text-unqops-elements-textPrimary mb-2 flex items-center gap-2">
                       <span className="i-ph:github-logo w-4 h-4 text-purple-500" />
                       Repository URL
                     </p>
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 text-sm bg-unqops-elements-background-depth-1 dark:bg-unqops-elements-background-depth-4 px-3 py-2 rounded border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark font-mono">
+                      <code className="flex-1 text-sm bg-unqops-elements-background-depth-1 dark:bg-unqops-elements-background-depth-4 px-3 py-2 rounded border border-unqops-elements-borderColor text-unqops-elements-textPrimary font-mono">
                         {createdRepoUrl}
                       </code>
                       <motion.button
@@ -327,7 +324,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                           navigator.clipboard.writeText(createdRepoUrl);
                           toast.success('URL copied to clipboard');
                         }}
-                        className="p-2 text-unqops-elements-textSecondary hover:text-unqops-elements-textPrimary dark:text-unqops-elements-textSecondary-dark dark:hover:text-unqops-elements-textPrimary-dark bg-unqops-elements-background-depth-1 dark:bg-unqops-elements-background-depth-4 rounded-lg border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark"
+                        className="p-2 text-unqops-elements-textSecondary hover:text-unqops-elements-textPrimary bg-unqops-elements-background-depth-1 dark:bg-unqops-elements-background-depth-4 rounded-lg border border-unqops-elements-borderColor"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -336,8 +333,8 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                     </div>
                   </div>
 
-                  <div className="bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg p-4 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark">
-                    <p className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark mb-2 flex items-center gap-2">
+                  <div className="bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg p-4 border border-unqops-elements-borderColor">
+                    <p className="text-sm font-medium text-unqops-elements-textPrimary mb-2 flex items-center gap-2">
                       <span className="i-ph:files w-4 h-4 text-purple-500" />
                       Pushed Files ({pushedFiles.length})
                     </p>
@@ -345,10 +342,10 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                       {pushedFiles.map((file) => (
                         <div
                           key={file.path}
-                          className="flex items-center justify-between py-1.5 text-sm text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark border-b border-unqops-elements-borderColor/30 dark:border-unqops-elements-borderColor-dark/30 last:border-0"
+                          className="flex items-center justify-between py-1.5 text-sm text-unqops-elements-textPrimary border-b border-unqops-elements-borderColor/30 last:border-0"
                         >
                           <span className="font-mono truncate flex-1 text-xs">{file.path}</span>
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-unqops-elements-background-depth-3 dark:bg-unqops-elements-background-depth-4 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark ml-2">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-unqops-elements-background-depth-3 dark:bg-unqops-elements-background-depth-4 text-unqops-elements-textSecondary ml-2">
                             {formatSize(file.size)}
                           </span>
                         </div>
@@ -373,7 +370,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                         navigator.clipboard.writeText(createdRepoUrl);
                         toast.success('URL copied to clipboard');
                       }}
-                      className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 text-sm inline-flex items-center gap-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark"
+                      className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 text-sm inline-flex items-center gap-2 border border-unqops-elements-borderColor"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -382,7 +379,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                     </motion.button>
                     <motion.button
                       onClick={handleClose}
-                      className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 text-sm border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark"
+                      className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 text-sm border border-unqops-elements-borderColor"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -412,14 +409,14 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
               className="w-[90vw] md:w-[500px]"
             >
               <Dialog.Content
-                className="bg-white dark:bg-unqops-elements-background-depth-1 rounded-lg p-6 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark shadow-xl"
+                className="bg-white dark:bg-unqops-elements-background-depth-1 rounded-lg p-6 border border-unqops-elements-borderColor shadow-xl"
                 aria-describedby="connection-required-description"
               >
                 <div className="relative text-center space-y-4">
                   <Dialog.Close asChild>
                     <button
                       onClick={handleClose}
-                      className="absolute right-0 top-0 p-2 rounded-lg transition-all duration-200 ease-in-out bg-transparent text-unqops-elements-textTertiary hover:text-unqops-elements-textPrimary dark:text-unqops-elements-textTertiary-dark dark:hover:text-unqops-elements-textPrimary-dark hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3 focus:outline-none focus:ring-2 focus:ring-unqops-elements-borderColor dark:focus:ring-unqops-elements-borderColor-dark"
+                      className="absolute right-0 top-0 p-2 rounded-lg transition-all duration-200 ease-in-out bg-transparent text-unqops-elements-textTertiary hover:text-unqops-elements-textPrimary hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3 focus:outline-none focus:ring-2 focus:ring-unqops-elements-borderColor"
                     >
                       <span className="i-ph:x block w-5 h-5" aria-hidden="true" />
                       <span className="sr-only">Close dialog</span>
@@ -433,19 +430,17 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                   >
                     <div className="i-ph:github-logo w-8 h-8" />
                   </motion.div>
-                  <h3 className="text-lg font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark">
-                    GitHub Connection Required
-                  </h3>
+                  <h3 className="text-lg font-medium text-unqops-elements-textPrimary">GitHub Connection Required</h3>
                   <p
                     id="connection-required-description"
-                    className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark max-w-md mx-auto"
+                    className="text-sm text-unqops-elements-textSecondary max-w-md mx-auto"
                   >
                     To push your code to GitHub, you need to connect your GitHub account in Settings {'>'} Connections
                     first.
                   </p>
                   <div className="pt-2 flex justify-center gap-3">
                     <motion.button
-                      className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark text-sm hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark"
+                      className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary text-sm hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 border border-unqops-elements-borderColor"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleClose}
@@ -484,7 +479,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
             className="w-[90vw] md:w-[500px]"
           >
             <Dialog.Content
-              className="bg-white dark:bg-unqops-elements-background-depth-1 rounded-lg border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark shadow-xl"
+              className="bg-white dark:bg-unqops-elements-background-depth-1 rounded-lg border border-unqops-elements-borderColor shadow-xl"
               aria-describedby="push-dialog-description"
             >
               <div className="p-6">
@@ -498,20 +493,17 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                     <div className="i-ph:github-logo w-5 h-5" />
                   </motion.div>
                   <div>
-                    <Dialog.Title className="text-lg font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark">
+                    <Dialog.Title className="text-lg font-medium text-unqops-elements-textPrimary">
                       Push to GitHub
                     </Dialog.Title>
-                    <p
-                      id="push-dialog-description"
-                      className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark"
-                    >
+                    <p id="push-dialog-description" className="text-sm text-unqops-elements-textSecondary">
                       Push your code to a new or existing GitHub repository
                     </p>
                   </div>
                   <Dialog.Close asChild>
                     <button
                       onClick={handleClose}
-                      className="ml-auto p-2 rounded-lg transition-all duration-200 ease-in-out bg-transparent text-unqops-elements-textTertiary hover:text-unqops-elements-textPrimary dark:text-unqops-elements-textTertiary-dark dark:hover:text-unqops-elements-textPrimary-dark hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3 focus:outline-none focus:ring-2 focus:ring-unqops-elements-borderColor dark:focus:ring-unqops-elements-borderColor-dark"
+                      className="ml-auto p-2 rounded-lg transition-all duration-200 ease-in-out bg-transparent text-unqops-elements-textTertiary hover:text-unqops-elements-textPrimary hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3 focus:outline-none focus:ring-2 focus:ring-unqops-elements-borderColor"
                     >
                       <span className="i-ph:x block w-5 h-5" aria-hidden="true" />
                       <span className="sr-only">Close dialog</span>
@@ -519,7 +511,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                   </Dialog.Close>
                 </div>
 
-                <div className="flex items-center gap-3 mb-6 p-4 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark">
+                <div className="flex items-center gap-3 mb-6 p-4 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg border border-unqops-elements-borderColor">
                   <div className="relative">
                     <img src={user.avatar_url} alt={user.login} className="w-10 h-10 rounded-full" />
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center text-white">
@@ -527,25 +519,18 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark">
-                      {user.name || user.login}
-                    </p>
-                    <p className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark">
-                      @{user.login}
-                    </p>
+                    <p className="text-sm font-medium text-unqops-elements-textPrimary">{user.name || user.login}</p>
+                    <p className="text-sm text-unqops-elements-textSecondary">@{user.login}</p>
                   </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <label
-                      htmlFor="repoName"
-                      className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark"
-                    >
+                    <label htmlFor="repoName" className="text-sm text-unqops-elements-textSecondary">
                       Repository Name
                     </label>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-unqops-elements-textTertiary">
                         <span className="i-ph:git-branch w-4 h-4" />
                       </div>
                       <input
@@ -554,7 +539,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                         value={repoName}
                         onChange={(e) => setRepoName(e.target.value)}
                         placeholder="my-awesome-project"
-                        className="w-full pl-10 px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark placeholder-unqops-elements-textTertiary dark:placeholder-unqops-elements-textTertiary-dark focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full pl-10 px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor text-unqops-elements-textPrimary placeholder-unqops-elements-textTertiary focus:outline-none focus:ring-2 focus:ring-purple-500"
                         required
                       />
                     </div>
@@ -562,10 +547,8 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between mb-2">
-                      <label className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark">
-                        Recent Repositories
-                      </label>
-                      <span className="text-xs text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark">
+                      <label className="text-sm text-unqops-elements-textSecondary">Recent Repositories</label>
+                      <span className="text-xs text-unqops-elements-textTertiary">
                         {filteredRepos.length} of {recentRepos.length}
                       </span>
                     </div>
@@ -576,7 +559,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                         value={repoSearchQuery}
                         onChange={(e) => setRepoSearchQuery(e.target.value)}
                         onClear={() => setRepoSearchQuery('')}
-                        className="bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark text-sm"
+                        className="bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor text-sm"
                       />
                     </div>
 
@@ -602,14 +585,14 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                               key={repo.full_name}
                               type="button"
                               onClick={() => setRepoName(repo.name)}
-                              className="w-full p-3 text-left rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 transition-colors group border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark hover:border-purple-500/30"
+                              className="w-full p-3 text-left rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 transition-colors group border border-unqops-elements-borderColor hover:border-purple-500/30"
                               whileHover={{ scale: 1.01 }}
                               whileTap={{ scale: 0.99 }}
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <div className="i-ph:git-branch w-4 h-4 text-purple-500" />
-                                  <span className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark group-hover:text-purple-500">
+                                  <span className="text-sm font-medium text-unqops-elements-textPrimary group-hover:text-purple-500">
                                     {repo.name}
                                   </span>
                                 </div>
@@ -620,7 +603,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                                 )}
                               </div>
                               {repo.description && (
-                                <p className="mt-1 text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark line-clamp-2">
+                                <p className="mt-1 text-xs text-unqops-elements-textSecondary line-clamp-2">
                                   {repo.description}
                                 </p>
                               )}
@@ -652,23 +635,20 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                       <StatusIndicator status="loading" pulse={true} label="Loading repositories..." />
                     </div>
                   )}
-                  <div className="p-3 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark">
+                  <div className="p-3 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 rounded-lg border border-unqops-elements-borderColor">
                     <div className="flex items-center gap-2">
                       <input
                         type="checkbox"
                         id="private"
                         checked={isPrivate}
                         onChange={(e) => setIsPrivate(e.target.checked)}
-                        className="rounded border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark text-purple-500 focus:ring-purple-500 dark:bg-unqops-elements-background-depth-3"
+                        className="rounded border-unqops-elements-borderColor text-purple-500 focus:ring-purple-500 dark:bg-unqops-elements-background-depth-3"
                       />
-                      <label
-                        htmlFor="private"
-                        className="text-sm text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark"
-                      >
+                      <label htmlFor="private" className="text-sm text-unqops-elements-textPrimary">
                         Make repository private
                       </label>
                     </div>
-                    <p className="text-xs text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark mt-2 ml-6">
+                    <p className="text-xs text-unqops-elements-textTertiary mt-2 ml-6">
                       Private repositories are only visible to you and people you share them with
                     </p>
                   </div>
@@ -677,7 +657,7 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
                     <motion.button
                       type="button"
                       onClick={handleClose}
-                      className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 text-sm border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark"
+                      className="px-4 py-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 text-sm border border-unqops-elements-borderColor"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >

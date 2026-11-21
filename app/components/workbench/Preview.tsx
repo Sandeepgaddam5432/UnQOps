@@ -184,7 +184,7 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
           width: '15px',
           height: '100%',
           cursor: 'ew-resize',
-          background: 'var(--unqops-elements-background-depth-4, rgba(0,0,0,.3))',
+          background: 'var(--unqops-elements-bg-depth-4, rgba(0,0,0,.3))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -193,12 +193,8 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
           touchAction: 'none',
           zIndex: 10,
         }}
-        onMouseOver={(e) =>
-          (e.currentTarget.style.background = 'var(--unqops-elements-background-depth-4, rgba(0,0,0,.3))')
-        }
-        onMouseOut={(e) =>
-          (e.currentTarget.style.background = 'var(--unqops-elements-background-depth-3, rgba(0,0,0,.15))')
-        }
+        onMouseOver={(e) => (e.currentTarget.style.background = 'var(--unqops-elements-bg-depth-4, rgba(0,0,0,.3))')}
+        onMouseOut={(e) => (e.currentTarget.style.background = 'var(--unqops-elements-bg-depth-3, rgba(0,0,0,.15))')}
         title="Drag to resize width"
       >
         <GripIcon />
@@ -903,7 +899,7 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
             width: isDeviceModeOn ? (showDeviceFrameInPreview ? '100%' : `${widthPercent}%`) : '100%',
             height: '100%',
             overflow: 'auto',
-            background: 'var(--unqops-elements-background-depth-1)',
+            background: 'var(--unqops-elements-bg-depth-1)',
             position: 'relative',
             display: 'flex',
             justifyContent: 'center',
@@ -1025,7 +1021,7 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
                   top: '-25px',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  background: 'var(--unqops-elements-background-depth-3, rgba(0,0,0,0.7))',
+                  background: 'var(--unqops-elements-bg-depth-3, rgba(0,0,0,0.7))',
                   color: 'var(--unqops-elements-textPrimary, white)',
                   padding: '2px 8px',
                   borderRadius: '4px',

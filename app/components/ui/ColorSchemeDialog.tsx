@@ -147,7 +147,9 @@ export const ColorSchemeDialog: React.FC<ColorSchemeDialogProps> = ({ setDesignS
               </div>
               <div
                 className={`text-sm font-medium transition-colors ${
-                  font.includes(f.key) ? 'text-unqops-elements-item-contentAccent' : 'text-unqops-elements-textSecondary'
+                  font.includes(f.key)
+                    ? 'text-unqops-elements-item-contentAccent'
+                    : 'text-unqops-elements-textSecondary'
                 }`}
               >
                 {f.label}
@@ -180,7 +182,7 @@ export const ColorSchemeDialog: React.FC<ColorSchemeDialogProps> = ({ setDesignS
               <button
                 type="button"
                 onClick={() => handleFeatureToggle(f.key)}
-                className={`group relative w-full p-6 text-sm font-medium transition-all duration-200 bg-unqops-elements-background-depth-3 text-unqops-elements-item-textSecondary ${
+                className={`group relative w-full p-6 text-sm font-medium transition-all duration-200 bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary ${
                   f.key === 'rounded'
                     ? isSelected
                       ? 'rounded-3xl'

@@ -501,7 +501,7 @@ function FileContextMenu({
         <ContextMenu.Portal>
           <ContextMenu.Content
             style={{ zIndex: 998 }}
-            className="border border-unqops-elements-borderColor rounded-md z-context-menu bg-unqops-elements-background-depth-1 dark:bg-unqops-elements-background-depth-2 data-[state=open]:animate-in animate-duration-100 data-[state=open]:fade-in-0 data-[state=open]:zoom-in-98 w-56"
+            className="border border-unqops-elements-borderColor rounded-md z-max bg-unqops-elements-background-depth-1 dark:bg-unqops-elements-background-depth-2 data-[state=open]:animate-in animate-duration-100 data-[state=open]:fade-in-0 data-[state=open]:zoom-in-98 w-56"
           >
             <ContextMenu.Group className="p-1 border-b-px border-solid border-unqops-elements-borderColor">
               <ContextMenuItem onSelect={() => setIsCreatingFile(true)}>

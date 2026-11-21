@@ -1,0 +1,244 @@
+// Foundry design tokens. Values here are SSR/no-JS defaults; the Theme Studio engine
+// (app/lib/theme/apply.ts) overrides every `--od-*` variable at runtime on <html>.
+// Colors are stored as space separated RGB channels so they work with `rgb(var(--od-bg) / 0.5)`.
+
+:root {
+  --od-r-control: 8px;
+  --od-r-field: 8px;
+  --od-r-card: 12px;
+  --od-r-box: 16px;
+  --od-r-badge: 999px;
+  --od-density: 1;
+  --od-font-scale: 1;
+  --od-motion-scale: 1;
+  --od-font-heading: 'Albert Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --od-font-body: 'Albert Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --od-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --od-dur-fast: calc(120ms * var(--od-motion-scale));
+  --od-dur-base: calc(200ms * var(--od-motion-scale));
+  --od-dur-slow: calc(360ms * var(--od-motion-scale));
+  --od-ease: cubic-bezier(0.33, 0, 0.2, 1);
+}
+
+:root,
+:root[data-theme='light'] {
+  --od-bg: 255 255 255;
+  --od-surface: 250 250 250;
+  --od-subtle: 237 237 237;
+  --od-border: 219 219 219;
+  --od-border-strong: 138 138 138;
+  --od-fg: 32 32 32;
+  --od-fg-muted: 92 92 92;
+  --od-fg-soft: 112 112 112;
+  --od-primary: 53 53 53;
+  --od-primary-fg: 250 250 250;
+  --od-secondary: 237 237 237;
+  --od-secondary-fg: 32 32 32;
+  --od-accent: 135 234 92;
+  --od-accent-fg: 13 51 0;
+  --od-success: 0 121 74;
+  --od-warning: 168 90 0;
+  --od-danger: 217 45 46;
+  --od-info: 26 100 224;
+  --od-shadow-sm: 0 1px 2px rgba(28, 27, 26, 0.06);
+  --od-shadow-md: 0 6px 24px rgba(28, 27, 26, 0.08), 0 2px 6px rgba(28, 27, 26, 0.04);
+  --od-shadow-lg: 0 24px 60px rgba(28, 27, 26, 0.16), 0 8px 16px rgba(28, 27, 26, 0.07);
+}
+
+:root[data-theme='dark'] {
+  --od-bg: 32 32 32;
+  --od-surface: 42 42 42;
+  --od-subtle: 53 53 53;
+  --od-border: 73 73 73;
+  --od-border-strong: 132 132 132;
+  --od-fg: 250 250 250;
+  --od-fg-muted: 189 189 189;
+  --od-fg-soft: 154 154 154;
+  --od-primary: 237 237 237;
+  --od-primary-fg: 32 32 32;
+  --od-secondary: 53 53 53;
+  --od-secondary-fg: 250 250 250;
+  --od-accent: 135 234 92;
+  --od-accent-fg: 13 51 0;
+  --od-success: 59 191 125;
+  --od-warning: 255 199 64;
+  --od-danger: 255 107 107;
+  --od-info: 90 174 255;
+  --od-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --od-shadow-md: 0 6px 24px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --od-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+html {
+  font-size: calc(100% * var(--od-font-scale));
+}
+
+body {
+  font-family: var(--od-font-body);
+  color: rgb(var(--od-fg));
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--od-font-heading);
+  letter-spacing: -0.02em;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--od-font-mono);
+}
+
+::selection {
+  background: rgba(var(--od-accent), 0.45);
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--od-primary));
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--od-border-strong)) transparent;
+}
+
+// Surface styles ---------------------------------------------------------
+[data-surface-style='glass'] {
+  .od-card,
+  .od-panel {
+    background-color: rgba(var(--od-surface), 0.7);
+    backdrop-filter: blur(14px) saturate(1.2);
+  }
+}
+
+[data-surface-style='bordered'] {
+  .od-card,
+  .od-panel {
+    box-shadow: none;
+    border-width: 2px;
+  }
+}
+
+// Motion -----------------------------------------------------------------
+[data-motion='off'] {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Keyframes --------------------------------------------------------------
+@keyframes od-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes od-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes od-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@keyframes od-slide-up-sheet {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@keyframes od-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.od-fade-up {
+  animation: od-fade-up var(--od-dur-slow) var(--od-ease) both;
+}
+
+.od-pop-in {
+  animation: od-pop-in var(--od-dur-base) var(--od-ease) both;
+}
+
+.od-slide-in-right {
+  animation: od-slide-in-right var(--od-dur-slow) var(--od-ease) both;
+}
+
+.od-slide-up-sheet {
+  animation: od-slide-up-sheet var(--od-dur-slow) var(--od-ease) both;
+}
+
+.od-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--od-subtle)) 25%,
+    rgba(var(--od-subtle), 0.5) 50%,
+    rgb(var(--od-subtle)) 75%
+  );
+  background-size: 200% 100%;
+  animation: od-shimmer 1.6s linear infinite;
+}
+
+.od-hero-glow {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 28rem;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(var(--od-accent), 0.22), transparent 70%);
+}
+
+.od-scrim {
+  background-color: rgba(var(--od-fg), 0.5);
+  backdrop-filter: blur(2px);
+}

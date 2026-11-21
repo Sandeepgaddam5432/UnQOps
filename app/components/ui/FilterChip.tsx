@@ -46,7 +46,7 @@ export function FilterChip({ label, value, onRemove, active = false, icon, class
         'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
         active
           ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30'
-          : 'bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark',
+          : 'bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary border border-unqops-elements-borderColor',
         onRemove && 'pr-1',
         className,
       )}
@@ -61,9 +61,7 @@ export function FilterChip({ label, value, onRemove, active = false, icon, class
         {value !== undefined && (
           <span
             className={
-              active
-                ? 'text-purple-700 dark:text-purple-300 font-semibold'
-                : 'text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark'
+              active ? 'text-purple-700 dark:text-purple-300 font-semibold' : 'text-unqops-elements-textPrimary'
             }
           >
             {value}
@@ -78,9 +76,7 @@ export function FilterChip({ label, value, onRemove, active = false, icon, class
           onClick={onRemove}
           className={classNames(
             'ml-1 p-0.5 rounded-full hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4 transition-colors',
-            active
-              ? 'text-purple-600 dark:text-purple-400'
-              : 'text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark',
+            active ? 'text-purple-600 dark:text-purple-400' : 'text-unqops-elements-textTertiary',
           )}
           aria-label={`Remove ${label} filter`}
         >

@@ -408,7 +408,7 @@ export default function NetlifyConnection() {
                               href={site.ssl_url || site.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm flex items-center gap-1 transition-colors text-unqops-elements-link-text hover:text-unqops-elements-link-textHover dark:text-white dark:hover:text-unqops-elements-link-textHover"
+                              className="text-sm flex items-center gap-1 transition-colors text-unqops-elements-messages-linkColor hover:text-unqops-elements-messages-linkColor dark:text-white dark:hover:text-unqops-elements-messages-linkColor"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <CloudIcon className="h-3 w-3 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
@@ -529,7 +529,7 @@ export default function NetlifyConnection() {
                                   href={deploy.deploy_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-1 transition-colors text-unqops-elements-link-text hover:text-unqops-elements-link-textHover dark:text-white dark:hover:text-unqops-elements-link-textHover"
+                                  className="flex items-center gap-1 transition-colors text-unqops-elements-messages-linkColor hover:text-unqops-elements-messages-linkColor dark:text-white dark:hover:text-unqops-elements-messages-linkColor"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <CloudIcon className="h-3 w-3 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
@@ -616,8 +616,8 @@ export default function NetlifyConnection() {
                               </span>
                             </div>
                             {build.error && (
-                              <div className="mt-2 text-xs text-unqops-elements-textDestructive dark:text-unqops-elements-textDestructive flex items-center gap-1">
-                                <XCircleIcon className="h-3 w-3 text-unqops-elements-textDestructive dark:text-unqops-elements-textDestructive" />
+                              <div className="mt-2 text-xs text-unqops-elements-item-contentDanger dark:text-unqops-elements-item-contentDanger flex items-center gap-1">
+                                <XCircleIcon className="h-3 w-3 text-unqops-elements-item-contentDanger dark:text-unqops-elements-item-contentDanger" />
                                 Error: {build.error}
                               </div>
                             )}

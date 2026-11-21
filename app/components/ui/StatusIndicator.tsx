@@ -75,16 +75,7 @@ export function StatusIndicator({ status, size = 'md', pulse = false, label, cla
       </span>
 
       {/* Optional label */}
-      {label && (
-        <span
-          className={classNames(
-            'text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark',
-            textSizeClass,
-          )}
-        >
-          {label}
-        </span>
-      )}
+      {label && <span className={classNames('text-unqops-elements-textSecondary', textSizeClass)}>{label}</span>}
     </div>
   );
 }

@@ -64,7 +64,7 @@ export const Markdown = memo(
             return (
               <div className="bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor rounded-lg p-3 my-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-mono bg-unqops-elements-background-depth-2 px-2 py-1 rounded text-unqops-elements-textTer">
+                  <span className="text-xs font-mono bg-unqops-elements-background-depth-2 px-2 py-1 rounded text-unqops-elements-textTertiary">
                     {elementData?.tagName}
                   </span>
                   {elementData?.className && (

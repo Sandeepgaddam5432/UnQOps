@@ -12,7 +12,7 @@ import { useMemo } from 'react';
 export function RepositoryCard({ repo, onSelect }: RepositoryCardProps) {
   // Use a consistent styling for all repository cards
   const getCardStyle = () => {
-    return 'from-unqops-elements-background-depth-1 to-unqops-elements-background-depth-1 dark:from-unqops-elements-background-depth-2-dark dark:to-unqops-elements-background-depth-2-dark';
+    return 'from-unqops-elements-background-depth-1 to-unqops-elements-background-depth-1';
   };
 
   // Format the date in a more readable format
@@ -51,7 +51,7 @@ export function RepositoryCard({ repo, onSelect }: RepositoryCardProps) {
 
   return (
     <motion.div
-      className={`p-5 rounded-xl bg-gradient-to-br ${cardStyle} border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark hover:border-purple-500/40 transition-all duration-300 shadow-sm hover:shadow-md`}
+      className={`p-5 rounded-xl bg-gradient-to-br ${cardStyle} border border-unqops-elements-borderColor hover:border-purple-500/40 transition-all duration-300 shadow-sm hover:shadow-md`}
       whileHover={{
         scale: 1.02,
         y: -2,
@@ -68,10 +68,8 @@ export function RepositoryCard({ repo, onSelect }: RepositoryCardProps) {
             <span className="i-ph:git-branch w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark text-base">
-              {repo.name}
-            </h3>
-            <p className="text-xs text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark flex items-center gap-1">
+            <h3 className="font-medium text-unqops-elements-textPrimary text-base">{repo.name}</h3>
+            <p className="text-xs text-unqops-elements-textTertiary flex items-center gap-1">
               <span className="i-ph:user w-3 h-3" />
               {repo.full_name.split('/')[0]}
             </p>
@@ -89,10 +87,8 @@ export function RepositoryCard({ repo, onSelect }: RepositoryCardProps) {
       </div>
 
       {repo.description && (
-        <div className="mb-4 bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm p-3 rounded-lg border border-unqops-elements-borderColor/30 dark:border-unqops-elements-borderColor-dark/30">
-          <p className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark line-clamp-2">
-            {repo.description}
-          </p>
+        <div className="mb-4 bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm p-3 rounded-lg border border-unqops-elements-borderColor/30">
+          <p className="text-sm text-unqops-elements-textSecondary line-clamp-2">{repo.description}</p>
         </div>
       )}
 
@@ -104,31 +100,31 @@ export function RepositoryCard({ repo, onSelect }: RepositoryCardProps) {
           </span>
         )}
         {repo.language && (
-          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark text-xs border border-unqops-elements-borderColor/30 dark:border-unqops-elements-borderColor-dark/30">
+          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm text-unqops-elements-textSecondary text-xs border border-unqops-elements-borderColor/30">
             <span className="i-ph:code w-3 h-3" />
             {repo.language}
           </span>
         )}
-        <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark text-xs border border-unqops-elements-borderColor/30 dark:border-unqops-elements-borderColor-dark/30">
+        <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm text-unqops-elements-textSecondary text-xs border border-unqops-elements-borderColor/30">
           <span className="i-ph:star w-3 h-3" />
           {repo.stargazers_count.toLocaleString()}
         </span>
         {repo.forks_count > 0 && (
-          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark text-xs border border-unqops-elements-borderColor/30 dark:border-unqops-elements-borderColor-dark/30">
+          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm text-unqops-elements-textSecondary text-xs border border-unqops-elements-borderColor/30">
             <span className="i-ph:git-fork w-3 h-3" />
             {repo.forks_count.toLocaleString()}
           </span>
         )}
       </div>
 
-      <div className="mt-3 pt-3 border-t border-unqops-elements-borderColor/30 dark:border-unqops-elements-borderColor-dark/30 flex items-center justify-between">
-        <span className="flex items-center gap-1 text-xs text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark">
+      <div className="mt-3 pt-3 border-t border-unqops-elements-borderColor/30 flex items-center justify-between">
+        <span className="flex items-center gap-1 text-xs text-unqops-elements-textTertiary">
           <span className="i-ph:clock w-3 h-3" />
           Updated {formatDate(repo.updated_at)}
         </span>
 
         {repo.topics && repo.topics.length > 0 && (
-          <span className="text-xs text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark">
+          <span className="text-xs text-unqops-elements-textTertiary">
             {repo.topics.slice(0, 1).map((topic) => (
               <span
                 key={topic}

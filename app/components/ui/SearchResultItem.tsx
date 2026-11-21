@@ -39,7 +39,7 @@ export function SearchResultItem({
   return (
     <motion.div
       className={classNames(
-        'p-5 rounded-xl border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor-dark hover:border-purple-500/40 transition-all duration-300 shadow-sm hover:shadow-md bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-3/50',
+        'p-5 rounded-xl border border-unqops-elements-borderColor hover:border-purple-500/40 transition-all duration-300 shadow-sm hover:shadow-md bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-3/50',
         onClick ? 'cursor-pointer' : '',
         className,
       )}
@@ -67,13 +67,9 @@ export function SearchResultItem({
             </div>
           )}
           <div>
-            <h3 className="font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary-dark text-base">
-              {title}
-            </h3>
+            <h3 className="font-medium text-unqops-elements-textPrimary text-base">{title}</h3>
             {subtitle && (
-              <p className="text-xs text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark flex items-center gap-1">
-                {subtitle}
-              </p>
+              <p className="text-xs text-unqops-elements-textTertiary flex items-center gap-1">{subtitle}</p>
             )}
           </div>
         </div>
@@ -94,10 +90,8 @@ export function SearchResultItem({
       </div>
 
       {description && (
-        <div className="mb-4 bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm p-3 rounded-lg border border-unqops-elements-borderColor/30 dark:border-unqops-elements-borderColor-dark/30">
-          <p className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark line-clamp-2">
-            {description}
-          </p>
+        <div className="mb-4 bg-unqops-elements-background-depth-1/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm p-3 rounded-lg border border-unqops-elements-borderColor/30">
+          <p className="text-sm text-unqops-elements-textSecondary line-clamp-2">{description}</p>
         </div>
       )}
 
@@ -112,18 +106,14 @@ export function SearchResultItem({
       )}
 
       {metadata && metadata.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 text-xs text-unqops-elements-textTertiary dark:text-unqops-elements-textTertiary-dark">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-unqops-elements-textTertiary">
           {metadata.map((item, index) => (
             <div key={index} className="flex items-center gap-1">
               {item.icon && <span className={classNames(item.icon, 'w-3.5 h-3.5')} />}
               <span>
                 {item.label}
                 {item.value !== undefined && ': '}
-                {item.value !== undefined && (
-                  <span className="text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary-dark">
-                    {item.value}
-                  </span>
-                )}
+                {item.value !== undefined && <span className="text-unqops-elements-textSecondary">{item.value}</span>}
               </span>
             </div>
           ))}

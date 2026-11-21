@@ -56,7 +56,7 @@ export const CodeBlock = memo(
         <div
           className={classNames(
             styles.CopyButtonContainer,
-            'bg-transparant absolute top-[10px] right-[10px] rounded-md z-10 text-lg flex items-center justify-center opacity-0 group-hover:opacity-100',
+            'bg-transparent absolute top-[10px] right-[10px] rounded-md z-10 text-lg flex items-center justify-center opacity-0 group-hover:opacity-100',
             {
               'rounded-l-0 opacity-100': copied,
             },
