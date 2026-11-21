@@ -73,7 +73,7 @@ docker compose --profile development up
 
 ## Design direction
 
-The workspace uses neutral light and dark surfaces, compact controls and a teal focus accent. Theme selection is available in the navigation menu. See [design system](docs/design-system.md) and [analysis](docs/analysis/unqops-analysis.md) for the current scope and remaining work.
+The workspace uses light and dark neutral surfaces, a tinted navigation rail, compact controls and a green focus accent inspired by the OpenDesign workspace. Theme selection is available in the navigation menu. See [design system](docs/design-system.md) and [analysis](docs/analysis/unqops-analysis.md) and [reference notes](docs/analysis/open-design-analysis.md) for the current scope and remaining work.
 
 Useful checks: `pnpm run lint`, `pnpm run test`, `pnpm run build`, and `pnpm run typecheck` (the latter expects the generated server build). Copy `.env.example` to `.env.local` and configure only the integrations you use. Never commit API keys.
 
