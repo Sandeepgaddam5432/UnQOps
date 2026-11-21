@@ -4,6 +4,7 @@ import { chatStore } from '~/lib/stores/chat';
 import { classNames } from '~/utils/classNames';
 import { HeaderActionButtons } from './HeaderActionButtons.client';
 import { ChatDescription } from '~/lib/persistence/ChatDescription.client';
+import { WorkspaceAppearance } from '~/components/ui/WorkspaceAppearance';
 
 export function Header() {
   const chat = useStore(chatStore);
@@ -30,6 +31,7 @@ export function Header() {
           <img src="/logo-dark-styled.png" alt="UnQOps home" className="w-[90px] inline-block hidden dark:block" />
         </a>
       </div>
+      {!chat.started && <span className="flex-1" />}
       {chat.started && ( // Display ChatDescription and HeaderActionButtons only when the chat has started.
         <>
           <span className="flex-1 px-4 truncate text-center text-unqops-elements-textPrimary">
@@ -44,6 +46,7 @@ export function Header() {
           </ClientOnly>
         </>
       )}
+      <ClientOnly>{() => <WorkspaceAppearance />}</ClientOnly>
     </header>
   );
 }

@@ -1,0 +1,15 @@
+Foundry Web Template
+Copyright 2026 Template contributors
+
+This product is a derivative work. Its architecture, design tokens (neutral grey +
+green palette, radius / shadow / motion scales) and UI patterns were analysed from and
+inspired by "Open Design" (https://github.com/nexu-io/open-design),
+Copyright (c) the Open Design authors, licensed under the Apache License, Version 2.0.
+
+Changes: the frontend was re-implemented as a standalone Vite + React + Tailwind template;
+all backend, daemon, Electron, agent, telemetry and branding code was removed; design tokens,
+a theme engine, mock adapters, a component library, layouts, sections and page templates
+were added.
+
+"Open Design" names, logos and trademarks are NOT included and are not licensed for use
+with this template. See LICENSE for the full Apache-2.0 terms.
