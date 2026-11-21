@@ -558,7 +558,7 @@ function FileContextMenu({
             {/* Add delete option in a new group */}
             <ContextMenu.Group className="p-1 border-t-px border-solid border-unqops-elements-borderColor">
               <ContextMenuItem onSelect={handleDelete}>
-                <div className="flex items-center gap-2 text-red-500">
+                <div className="flex items-center gap-2 text-od-danger">
                   <div className="i-ph:trash" />
                   Delete {isFolder ? 'Folder' : 'File'}
                 </div>
@@ -610,7 +610,7 @@ function Folder({ folder, collapsed, selected = false, onCopyPath, onCopyRelativ
           <div className="flex-1 truncate pr-2">{folder.name}</div>
           {isLocked && (
             <span
-              className={classNames('shrink-0', 'i-ph:lock-simple scale-80 text-red-500')}
+              className={classNames('shrink-0', 'i-ph:lock-simple scale-80 text-od-danger')}
               title={'Folder is locked'}
             />
           )}
@@ -706,17 +706,17 @@ function File({
           <div className="flex items-center gap-1">
             {showStats && (
               <div className="flex items-center gap-1 text-xs">
-                {additions > 0 && <span className="text-green-500">+{additions}</span>}
-                {deletions > 0 && <span className="text-red-500">-{deletions}</span>}
+                {additions > 0 && <span className="text-od-success">+{additions}</span>}
+                {deletions > 0 && <span className="text-od-danger">-{deletions}</span>}
               </div>
             )}
             {locked && (
               <span
-                className={classNames('shrink-0', 'i-ph:lock-simple scale-80 text-red-500')}
+                className={classNames('shrink-0', 'i-ph:lock-simple scale-80 text-od-danger')}
                 title={'File is locked'}
               />
             )}
-            {unsavedChanges && <span className="i-ph:circle-fill scale-68 shrink-0 text-orange-500" />}
+            {unsavedChanges && <span className="i-ph:circle-fill scale-68 shrink-0 text-od-warning" />}
           </div>
         </div>
       </NodeButton>

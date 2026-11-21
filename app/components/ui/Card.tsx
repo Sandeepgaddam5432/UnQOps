@@ -4,16 +4,7 @@ import { classNames } from '~/utils/classNames';
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const Card = forwardRef<HTMLDivElement, CardProps>(({ className, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={classNames(
-        'rounded-lg border border-unqops-elements-borderColor bg-unqops-elements-background-depth-1 text-unqops-elements-textPrimary shadow-sm',
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <div ref={ref} className={classNames('od-card text-od-fg', className)} {...props} />;
 });
 Card.displayName = 'Card';
 

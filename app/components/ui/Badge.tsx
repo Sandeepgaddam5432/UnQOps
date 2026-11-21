@@ -5,29 +5,26 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { classNames } from '~/utils/classNames';
 
 const badgeVariants = cva(
-  'inline-flex items-center gap-1 transition-colors focus:outline-none focus:ring-2 focus:ring-unqops-elements-ring focus:ring-offset-2',
+  'inline-flex items-center gap-1 border transition-colors focus:outline-none focus:ring-2 focus:ring-od-primary/40',
   {
     variants: {
       variant: {
-        default:
-          'border-transparent bg-unqops-elements-background text-unqops-elements-textPrimary hover:bg-unqops-elements-background/80',
-        secondary:
-          'border-transparent bg-unqops-elements-background text-unqops-elements-textSecondary hover:bg-unqops-elements-background/80',
-        destructive: 'border-transparent bg-red-500/10 text-red-500 hover:bg-red-500/20',
-        outline: 'text-unqops-elements-textPrimary',
-        primary: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
-        success: 'bg-green-500/10 text-green-600 dark:text-green-400',
-        warning: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
-        danger: 'bg-red-500/10 text-red-600 dark:text-red-400',
-        info: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-        subtle:
-          'border border-unqops-elements-borderColor/30 bg-white/50 dark:bg-unqops-elements-background-depth-4/50 backdrop-blur-sm text-unqops-elements-textSecondary',
+        default: 'border-od-border bg-od-subtle text-od-fg',
+        secondary: 'border-od-border bg-od-secondary text-od-secondary-fg',
+        destructive: 'border-od-danger/30 bg-od-danger/12 text-od-danger',
+        outline: 'border-od-border-strong bg-transparent text-od-fg',
+        primary: 'border-od-primary/30 bg-od-primary/10 text-od-fg',
+        success: 'border-od-success/30 bg-od-success/12 text-od-success',
+        warning: 'border-od-warning/30 bg-od-warning/12 text-od-warning',
+        danger: 'border-od-danger/30 bg-od-danger/12 text-od-danger',
+        info: 'border-od-info/30 bg-od-info/12 text-od-info',
+        subtle: 'border-od-border bg-od-surface text-od-fg-muted',
       },
       size: {
-        default: 'rounded-full px-2.5 py-0.5 text-xs font-semibold',
-        sm: 'rounded-full px-1.5 py-0.5 text-xs',
-        md: 'rounded-md px-2 py-1 text-xs font-medium',
-        lg: 'rounded-md px-2.5 py-1.5 text-sm',
+        default: 'rounded-od-badge px-2.5 py-0.5 text-xs font-semibold',
+        sm: 'rounded-od-badge px-1.5 py-0.5 text-xs',
+        md: 'rounded-od-control px-2 py-1 text-xs font-medium',
+        lg: 'rounded-od-control px-2.5 py-1.5 text-sm',
       },
     },
     defaultVariants: {

@@ -22,7 +22,7 @@ export const Slider = genericMemo(<T,>({ selected, options, setSelected }: Slide
   const isMiddleSelected = hasMiddle && options.middle ? selected === options.middle.value : false;
 
   return (
-    <div className="flex items-center flex-wrap shrink-0 gap-1 bg-unqops-elements-background-depth-1 overflow-hidden rounded-full p-1">
+    <div className="flex items-center flex-wrap shrink-0 gap-1 border border-od-border bg-od-subtle overflow-hidden rounded-od-control p-1">
       <SliderButton selected={isLeftSelected} setSelected={() => setSelected?.(options.left.value)}>
         {options.left.text}
       </SliderButton>
@@ -54,10 +54,8 @@ const SliderButton = memo(({ selected, children, setSelected }: SliderButtonProp
     <button
       onClick={setSelected}
       className={classNames(
-        'bg-transparent text-sm px-2.5 py-0.5 rounded-full relative',
-        selected
-          ? 'text-unqops-elements-item-contentAccent'
-          : 'text-unqops-elements-item-contentDefault hover:text-unqops-elements-item-contentActive',
+        'bg-transparent text-sm px-3 min-h-9 sm:min-h-7 rounded-od-control relative font-medium transition-colors',
+        selected ? 'text-od-primary-fg' : 'text-od-fg-muted hover:text-od-fg',
       )}
     >
       <span className="relative z-10">{children}</span>
@@ -65,7 +63,7 @@ const SliderButton = memo(({ selected, children, setSelected }: SliderButtonProp
         <motion.span
           layoutId="pill-tab"
           transition={{ duration: 0.2, ease: cubicEasingFn }}
-          className="absolute inset-0 z-0 bg-unqops-elements-item-backgroundAccent rounded-full"
+          className="absolute inset-0 z-0 bg-od-primary shadow-od-sm rounded-od-control"
         ></motion.span>
       )}
     </button>

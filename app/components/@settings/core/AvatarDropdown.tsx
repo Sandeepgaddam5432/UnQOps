@@ -6,7 +6,7 @@ import { profileStore } from '~/lib/stores/profile';
 import type { TabType, Profile } from './types';
 
 const BetaLabel = () => (
-  <span className="px-1.5 py-0.5 rounded-full bg-purple-500/10 dark:bg-purple-500/20 text-[10px] font-medium text-purple-600 dark:text-purple-400 ml-2">
+  <span className="px-1.5 py-0.5 rounded-full bg-od-primary/10 dark:bg-od-primary/20 text-[10px] font-medium text-od-primary dark:text-od-primary ml-2">
     BETA
   </span>
 );
@@ -35,7 +35,7 @@ export const AvatarDropdown = ({ onSelectTab }: AvatarDropdownProps) => {
               decoding="sync"
             />
           ) : (
-            <div className="w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500">
+            <div className="w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-od-surface text-od-fg-soft dark:text-od-fg-muted">
               <div className="i-ph:user w-6 h-6" />
             </div>
           )}
@@ -48,7 +48,7 @@ export const AvatarDropdown = ({ onSelectTab }: AvatarDropdownProps) => {
             'min-w-[240px] z-[250]',
             'bg-white dark:bg-[#141414]',
             'rounded-lg shadow-lg',
-            'border border-gray-200/50 dark:border-gray-800/50',
+            'border border-od-border/50 dark:border-od-border/50',
             'animate-in fade-in-0 zoom-in-95',
             'py-1',
           )}
@@ -58,10 +58,10 @@ export const AvatarDropdown = ({ onSelectTab }: AvatarDropdownProps) => {
           <div
             className={classNames(
               'px-4 py-3 flex items-center gap-3',
-              'border-b border-gray-200/50 dark:border-gray-800/50',
+              'border-b border-od-border/50 dark:border-od-border/50',
             )}
           >
-            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white dark:bg-gray-800 shadow-sm">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white dark:bg-od-surface shadow-sm">
               {profile?.avatar ? (
                 <img
                   src={profile.avatar}
@@ -71,65 +71,67 @@ export const AvatarDropdown = ({ onSelectTab }: AvatarDropdownProps) => {
                   decoding="sync"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500 font-medium text-lg">
+                <div className="w-full h-full flex items-center justify-center text-od-fg-soft dark:text-od-fg-muted font-medium text-lg">
                   <div className="i-ph:user w-6 h-6" />
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm text-gray-900 dark:text-white truncate">
+              <div className="font-medium text-sm text-od-fg dark:text-white truncate">
                 {profile?.username || 'Guest User'}
               </div>
-              {profile?.bio && <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{profile.bio}</div>}
+              {profile?.bio && (
+                <div className="text-xs text-od-fg-muted dark:text-od-fg-soft truncate">{profile.bio}</div>
+              )}
             </div>
           </div>
 
           <DropdownMenu.Item
             className={classNames(
               'flex items-center gap-2 px-4 py-2.5',
-              'text-sm text-gray-700 dark:text-gray-200',
-              'hover:bg-purple-50 dark:hover:bg-purple-500/10',
-              'hover:text-purple-500 dark:hover:text-purple-400',
+              'text-sm text-od-fg-muted dark:text-od-fg-soft',
+              'hover:bg-od-primary/10 dark:hover:bg-od-primary/10',
+              'hover:text-od-primary dark:hover:text-od-primary',
               'cursor-pointer transition-all duration-200',
               'outline-none',
               'group',
             )}
             onClick={() => onSelectTab('profile')}
           >
-            <div className="i-ph:user-circle w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+            <div className="i-ph:user-circle w-4 h-4 text-od-fg-soft group-hover:text-od-primary dark:group-hover:text-od-primary transition-colors" />
             Edit Profile
           </DropdownMenu.Item>
 
           <DropdownMenu.Item
             className={classNames(
               'flex items-center gap-2 px-4 py-2.5',
-              'text-sm text-gray-700 dark:text-gray-200',
-              'hover:bg-purple-50 dark:hover:bg-purple-500/10',
-              'hover:text-purple-500 dark:hover:text-purple-400',
+              'text-sm text-od-fg-muted dark:text-od-fg-soft',
+              'hover:bg-od-primary/10 dark:hover:bg-od-primary/10',
+              'hover:text-od-primary dark:hover:text-od-primary',
               'cursor-pointer transition-all duration-200',
               'outline-none',
               'group',
             )}
             onClick={() => onSelectTab('settings')}
           >
-            <div className="i-ph:gear-six w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+            <div className="i-ph:gear-six w-4 h-4 text-od-fg-soft group-hover:text-od-primary dark:group-hover:text-od-primary transition-colors" />
             Settings
           </DropdownMenu.Item>
 
-          <div className="my-1 border-t border-gray-200/50 dark:border-gray-800/50" />
+          <div className="my-1 border-t border-od-border/50 dark:border-od-border/50" />
           <DropdownMenu.Item
             className={classNames(
               'flex items-center gap-2 px-4 py-2.5',
-              'text-sm text-gray-700 dark:text-gray-200',
-              'hover:bg-purple-50 dark:hover:bg-purple-500/10',
-              'hover:text-purple-500 dark:hover:text-purple-400',
+              'text-sm text-od-fg-muted dark:text-od-fg-soft',
+              'hover:bg-od-primary/10 dark:hover:bg-od-primary/10',
+              'hover:text-od-primary dark:hover:text-od-primary',
               'cursor-pointer transition-all duration-200',
               'outline-none',
               'group',
             )}
             onClick={() => onSelectTab('service-status')}
           >
-            <div className="i-ph:heartbeat w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+            <div className="i-ph:heartbeat w-4 h-4 text-od-fg-soft group-hover:text-od-primary dark:group-hover:text-od-primary transition-colors" />
             Service Status
             <BetaLabel />
           </DropdownMenu.Item>

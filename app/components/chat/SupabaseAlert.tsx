@@ -153,7 +153,7 @@ export function SupabaseChatAlert({ alert, clearAlert, postMessage }: Props) {
                   `px-3 py-2 rounded-md text-sm font-medium`,
                   'bg-[#098F5F]',
                   'hover:bg-[#0aa06c]',
-                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-od-success',
                   'text-white',
                   'flex items-center gap-1.5',
                 )}
@@ -168,7 +168,7 @@ export function SupabaseChatAlert({ alert, clearAlert, postMessage }: Props) {
                   `px-3 py-2 rounded-md text-sm font-medium`,
                   'bg-[#098F5F]',
                   'hover:bg-[#0aa06c]',
-                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-od-success',
                   'text-white',
                   'flex items-center gap-1.5',
                   isExecuting ? 'opacity-70 cursor-not-allowed' : '',

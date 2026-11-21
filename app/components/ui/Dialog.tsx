@@ -22,12 +22,12 @@ export const DialogButton = memo(({ type, children, onClick, disabled }: DialogB
   return (
     <button
       className={classNames(
-        'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors',
+        'inline-flex items-center justify-center gap-2 px-4 min-h-11 sm:min-h-9 rounded-od-control text-sm font-medium transition active:scale-[0.98] disabled:opacity-50',
         type === 'primary'
-          ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-500 dark:hover:bg-purple-600'
+          ? 'bg-od-primary text-od-primary-fg shadow-od-sm hover:bg-od-primary/90'
           : type === 'secondary'
-            ? 'bg-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-            : 'bg-transparent text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10',
+            ? 'bg-transparent text-od-fg-muted hover:bg-od-subtle hover:text-od-fg'
+            : 'bg-od-danger/10 text-od-danger hover:bg-od-danger/20',
       )}
       onClick={onClick}
       disabled={disabled}
@@ -100,12 +100,34 @@ interface DialogProps {
   onBackdrop?: () => void;
 }
 
+const dialogSheetVariants = {
+  closed: { x: 0, y: '100%', scale: 1, opacity: 1, transition },
+  open: { x: 0, y: 0, scale: 1, opacity: 1, transition },
+} satisfies Variants;
+
+function useIsMobileSheet() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 639px)');
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener('change', update);
+
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  return isMobile;
+}
+
 export const Dialog = memo(({ children, className, showCloseButton = true, onClose, onBackdrop }: DialogProps) => {
+  const isMobile = useIsMobileSheet();
+
   return (
     <RadixDialog.Portal>
       <RadixDialog.Overlay asChild>
         <motion.div
-          className={classNames('fixed inset-0 z-[9999] bg-black/70 dark:bg-black/80 backdrop-blur-sm')}
+          className={classNames('fixed inset-0 z-[9999] od-scrim')}
           initial="closed"
           animate="open"
           exit="closed"
@@ -116,13 +138,13 @@ export const Dialog = memo(({ children, className, showCloseButton = true, onClo
       <RadixDialog.Content asChild>
         <motion.div
           className={classNames(
-            'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-950 rounded-lg shadow-xl border border-unqops-elements-borderColor z-[9999] w-[520px] focus:outline-none',
+            'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-od-surface text-od-fg rounded-od-box shadow-od-lg border border-od-border z-[9999] w-[520px] max-w-[calc(100vw-1rem)] max-h-[92dvh] overflow-y-auto focus:outline-none max-sm:top-auto max-sm:bottom-0 max-sm:left-0 max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none max-sm:rounded-t-2xl',
             className,
           )}
           initial="closed"
           animate="open"
           exit="closed"
-          variants={dialogVariants}
+          variants={isMobile ? dialogSheetVariants : dialogVariants}
         >
           <div className="flex flex-col">
             {children}
@@ -208,7 +230,7 @@ export function ConfirmationDialog({
   return (
     <RadixDialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog showCloseButton={false}>
-        <div className="p-6 bg-white dark:bg-gray-950 relative z-10">
+        <div className="p-6 bg-od-surface relative z-10">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="mb-4">{description}</DialogDescription>
           <div className="flex justify-end space-x-2">
@@ -348,7 +370,7 @@ export function SelectionDialog({
           'flex items-start space-x-3 p-2 rounded-md transition-colors',
           selectedItems.includes(item.id)
             ? 'bg-unqops-elements-item-backgroundAccent'
-            : 'bg-unqops-elements-bg-depth-2 hover:bg-unqops-elements-item-backgroundActive',
+            : 'bg-unqops-elements-background-depth-2 hover:bg-unqops-elements-item-backgroundActive',
         )}
         style={{
           ...style,
@@ -382,7 +404,7 @@ export function SelectionDialog({
   return (
     <RadixDialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog showCloseButton={false}>
-        <div className="p-6 bg-white dark:bg-gray-950 relative z-10">
+        <div className="p-6 bg-od-surface relative z-10">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="mt-2 mb-4">
             Select the items you want to include and click{' '}
@@ -398,14 +420,14 @@ export function SelectionDialog({
                 variant="ghost"
                 size="sm"
                 onClick={handleSelectAll}
-                className="text-xs h-8 px-2 text-unqops-elements-textPrimary hover:text-unqops-elements-item-contentAccent hover:bg-unqops-elements-item-backgroundAccent bg-unqops-elements-bg-depth-2 dark:bg-transparent"
+                className="text-xs h-8 px-2 text-unqops-elements-textPrimary hover:text-unqops-elements-item-contentAccent hover:bg-unqops-elements-item-backgroundAccent bg-unqops-elements-background-depth-2 dark:bg-transparent"
               >
                 {selectAll ? 'Deselect All' : 'Select All'}
               </Button>
             </div>
 
             <div
-              className="pr-2 border rounded-md border-unqops-elements-borderColor bg-unqops-elements-bg-depth-2"
+              className="pr-2 border rounded-md border-unqops-elements-borderColor bg-unqops-elements-background-depth-2"
               style={{
                 maxHeight,
               }}
@@ -416,7 +438,7 @@ export function SelectionDialog({
                   width="100%"
                   itemCount={items.length}
                   itemSize={60}
-                  className="scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-unqops-elements-bg-depth-3"
+                  className="scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-unqops-elements-background-depth-3"
                 >
                   {ItemRenderer}
                 </FixedSizeList>

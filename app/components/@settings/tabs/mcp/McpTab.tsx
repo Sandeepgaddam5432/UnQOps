@@ -189,7 +189,7 @@ export default function McpTab() {
               max="20"
               value={maxLLMSteps}
               onChange={(e) => handleMaxLLMCallChange(e.target.value)}
-              className="w-full px-3 py-2 text-unqops-elements-textPrimary text-sm rounded-lg bg-white dark:bg-unqops-elements-background-depth-4 border border-unqops-elements-borderColor focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-unqops-elements-textPrimary text-sm rounded-lg bg-white dark:bg-unqops-elements-background-depth-4 border border-unqops-elements-borderColor focus:outline-none focus:ring-2 focus:ring-od-info"
             />
           </div>
           <div className="mt-2 text-sm text-unqops-elements-textSecondary">

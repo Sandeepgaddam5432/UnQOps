@@ -227,7 +227,7 @@ export function LockManager() {
                 <span
                   className={classNames(
                     'inline-flex items-center px-1 rounded-sm text-xs',
-                    'bg-red-500/10 text-red-500',
+                    'bg-od-danger/10 text-od-danger',
                   )}
                 ></span>
                 <button

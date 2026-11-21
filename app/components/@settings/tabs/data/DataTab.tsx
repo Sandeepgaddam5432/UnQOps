@@ -429,7 +429,7 @@ export function DataTab() {
               <CardHeader>
                 <div className="flex items-center mb-2">
                   <motion.div
-                    className="text-red-500 dark:text-red-400 mr-2"
+                    className="text-od-danger dark:text-od-danger mr-2"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
@@ -588,7 +588,7 @@ export function DataTab() {
             <CardHeader>
               <div className="flex items-center mb-2">
                 <motion.div
-                  className="text-red-500 dark:text-red-400 mr-2"
+                  className="text-od-danger dark:text-od-danger mr-2"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >

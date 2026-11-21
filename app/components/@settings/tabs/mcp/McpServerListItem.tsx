@@ -44,7 +44,7 @@ export default function McpServerListItem({ toolName, toolSchema }: McpToolProps
                     <span className="font-medium text-unqops-elements-textPrimary">
                       {paramName}
                       {requiredParams.includes(paramName) && (
-                        <span className="text-red-600 dark:text-red-400 ml-1">*</span>
+                        <span className="text-od-danger dark:text-od-danger ml-1">*</span>
                       )}
                     </span>
 

@@ -64,7 +64,7 @@ export function CodeBlock({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            {copied ? <span className="i-ph:check w-4 h-4 text-green-500" /> : <span className="i-ph:copy w-4 h-4" />}
+            {copied ? <span className="i-ph:check w-4 h-4 text-od-success" /> : <span className="i-ph:copy w-4 h-4" />}
           </motion.button>
         </Tooltip>
       </div>
@@ -77,7 +77,7 @@ export function CodeBlock({
               <tr
                 key={index}
                 className={classNames(
-                  highlightLines.includes(index + 1) ? 'bg-purple-500/10 dark:bg-purple-500/20' : '',
+                  highlightLines.includes(index + 1) ? 'bg-od-primary/10 dark:bg-od-primary/20' : '',
                   'hover:bg-unqops-elements-background-depth-3 dark:hover:bg-unqops-elements-background-depth-4',
                 )}
               >

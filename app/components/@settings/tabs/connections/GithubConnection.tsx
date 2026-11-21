@@ -678,7 +678,7 @@ export default function GitHubConnection() {
                     Disconnect
                   </button>
                   <span className="text-sm text-unqops-elements-textSecondary flex items-center gap-1">
-                    <div className="i-ph:check-circle w-4 h-4 text-green-500" />
+                    <div className="i-ph:check-circle w-4 h-4 text-od-success" />
                     Connected to GitHub
                   </span>
                 </div>

@@ -5,6 +5,7 @@ import tailwindReset from '@unocss/reset/tailwind-compat.css?url';
 import { themeStore } from './lib/stores/theme';
 import { PRESETS } from './lib/theme/presets';
 import { initThemeStudio } from './lib/stores/themeStudio';
+import { ThemeCustomizerDrawer } from './components/ui/ThemeCustomizerDrawer';
 import { createHead } from 'remix-island';
 import { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
@@ -103,7 +104,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <ClientOnly>{() => <DndProvider backend={HTML5Backend}>{children}</DndProvider>}</ClientOnly>
+      <ClientOnly>
+        {() => (
+          <DndProvider backend={HTML5Backend}>
+            {children}
+            <ThemeCustomizerDrawer />
+          </DndProvider>
+        )}
+      </ClientOnly>
       <ScrollRestoration />
       <Scripts />
     </>

@@ -392,9 +392,9 @@ export default function NetlifyConnection() {
                                 className="flex items-center gap-1 text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary"
                               >
                                 {site.published_deploy?.state === 'ready' ? (
-                                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                                  <CheckCircleIcon className="h-4 w-4 text-od-success" />
                                 ) : (
-                                  <XCircleIcon className="h-4 w-4 text-red-500" />
+                                  <XCircleIcon className="h-4 w-4 text-od-danger" />
                                 )}
                                 <span className="text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
                                   {site.published_deploy?.state || 'Unknown'}
@@ -500,9 +500,9 @@ export default function NetlifyConnection() {
                                   className="flex items-center gap-1"
                                 >
                                   {deploy.state === 'ready' ? (
-                                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                                    <CheckCircleIcon className="h-4 w-4 text-od-success" />
                                   ) : deploy.state === 'error' ? (
-                                    <XCircleIcon className="h-4 w-4 text-red-500" />
+                                    <XCircleIcon className="h-4 w-4 text-od-danger" />
                                   ) : (
                                     <BuildingLibraryIcon className="h-4 w-4 text-unqops-elements-item-contentAccent" />
                                   )}
@@ -718,7 +718,7 @@ export default function NetlifyConnection() {
                 Disconnect
               </button>
               <span className="text-sm text-unqops-elements-textSecondary flex items-center gap-1">
-                <div className="i-ph:check-circle w-4 h-4 text-green-500" />
+                <div className="i-ph:check-circle w-4 h-4 text-od-success" />
                 Connected to Netlify
               </span>
             </div>

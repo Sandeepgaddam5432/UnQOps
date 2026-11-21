@@ -161,7 +161,7 @@ export default function VercelConnection() {
                   Disconnect
                 </button>
                 <span className="text-sm text-unqops-elements-textSecondary flex items-center gap-1">
-                  <div className="i-ph:check-circle w-4 h-4 text-green-500" />
+                  <div className="i-ph:check-circle w-4 h-4 text-od-success" />
                   Connected to Vercel
                 </span>
               </div>

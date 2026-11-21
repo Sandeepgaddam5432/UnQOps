@@ -69,7 +69,7 @@ export default function McpServerList({
 
             {/* Error message */}
             {!isAvailable && mcpServer.error && (
-              <div className="mt-1.5 ml-6 text-xs text-red-600 dark:text-red-400">Error: {mcpServer.error}</div>
+              <div className="mt-1.5 ml-6 text-xs text-od-danger dark:text-od-danger">Error: {mcpServer.error}</div>
             )}
 
             {/* Tool list */}

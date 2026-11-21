@@ -113,7 +113,7 @@ export function GitHubAuthDialog({ isOpen, onClose }: GitHubAuthDialogProps) {
                           href="https://github.com/settings/tokens"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-purple-500 hover:underline"
+                          className="text-od-primary hover:underline"
                         >
                           github.com/settings/tokens
                         </a>
@@ -147,22 +147,22 @@ export function GitHubAuthDialog({ isOpen, onClose }: GitHubAuthDialogProps) {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                      className="w-full py-2 bg-od-primary hover:bg-od-primary text-od-primary-fg rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
                       {isSubmitting ? 'Connecting...' : 'Connect to GitHub'}
                     </button>
                   </form>
                 </div>
 
-                <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg space-y-1.5">
-                  <h3 className="text-sm text-amber-800 dark:text-amber-300 font-medium flex items-center gap-1.5">
+                <div className="bg-od-warning/12 dark:bg-od-warning/20 p-3 rounded-lg space-y-1.5">
+                  <h3 className="text-sm text-od-warning dark:text-od-warning font-medium flex items-center gap-1.5">
                     <span className="i-ph:warning-circle w-4 h-4" />
                     Accessing Private Repositories
                   </h3>
-                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                  <p className="text-xs text-od-warning dark:text-od-warning">
                     Important things to know about accessing private repositories:
                   </p>
-                  <ul className="list-disc pl-4 text-xs text-amber-700 dark:text-amber-400 space-y-0.5">
+                  <ul className="list-disc pl-4 text-xs text-od-warning dark:text-od-warning space-y-0.5">
                     <li>You must be granted access to the repository by its owner</li>
                     <li>Your GitHub token must have the 'repo' scope</li>
                     <li>For organization repositories, you may need additional permissions</li>

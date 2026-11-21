@@ -305,17 +305,17 @@ export default function LocalProvidersTab() {
   const ModelDetails = ({ model }: { model: OllamaModel }) => (
     <div className="flex items-center gap-3 text-xs text-unqops-elements-textSecondary">
       <div className="flex items-center gap-1">
-        <div className="i-ph:code text-purple-500" />
+        <div className="i-ph:code text-od-primary" />
         <span>{model.digest.substring(0, 7)}</span>
       </div>
       {model.details && (
         <>
           <div className="flex items-center gap-1">
-            <div className="i-ph:database text-purple-500" />
+            <div className="i-ph:database text-od-primary" />
             <span>{model.details.parameter_size}</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="i-ph:cube text-purple-500" />
+            <div className="i-ph:cube text-od-primary" />
             <span>{model.details.quantization_level}</span>
           </div>
         </>
@@ -339,8 +339,8 @@ export default function LocalProvidersTab() {
         disabled={model.status === 'updating'}
         className={classNames(
           'rounded-lg p-2',
-          'bg-purple-500/10 text-purple-500',
-          'hover:bg-purple-500/20',
+          'bg-od-primary/10 text-od-primary',
+          'hover:bg-od-primary/20',
           'transition-all duration-200',
           { 'opacity-50 cursor-not-allowed': model.status === 'updating' },
         )}
@@ -362,8 +362,8 @@ export default function LocalProvidersTab() {
         disabled={model.status === 'updating'}
         className={classNames(
           'rounded-lg p-2',
-          'bg-red-500/10 text-red-500',
-          'hover:bg-red-500/20',
+          'bg-od-danger/10 text-od-danger',
+          'hover:bg-od-danger/20',
           'transition-all duration-200',
           { 'opacity-50 cursor-not-allowed': model.status === 'updating' },
         )}
@@ -398,7 +398,7 @@ export default function LocalProvidersTab() {
             <motion.div
               className={classNames(
                 'w-10 h-10 flex items-center justify-center rounded-xl',
-                'bg-purple-500/10 text-purple-500',
+                'bg-od-primary/10 text-od-primary',
               )}
               whileHover={{ scale: 1.05 }}
             >
@@ -445,7 +445,7 @@ export default function LocalProvidersTab() {
                     className={classNames(
                       'w-12 h-12 flex items-center justify-center rounded-xl',
                       'bg-unqops-elements-background-depth-3',
-                      provider.settings.enabled ? 'text-purple-500' : 'text-unqops-elements-textSecondary',
+                      provider.settings.enabled ? 'text-od-primary' : 'text-unqops-elements-textSecondary',
                     )}
                     whileHover={{ scale: 1.1, rotate: 5 }}
                   >
@@ -457,7 +457,7 @@ export default function LocalProvidersTab() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-semibold text-unqops-elements-textPrimary">{provider.name}</h3>
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-500">Local</span>
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-od-success/10 text-od-success">Local</span>
                     </div>
                     <p className="text-sm text-unqops-elements-textSecondary mt-1">
                       {PROVIDER_DESCRIPTIONS[provider.name as ProviderName]}
@@ -491,7 +491,7 @@ export default function LocalProvidersTab() {
                             'w-full px-3 py-2 rounded-lg text-sm',
                             'bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor',
                             'text-unqops-elements-textPrimary placeholder-unqops-elements-textTertiary',
-                            'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
+                            'focus:outline-none focus:ring-2 focus:ring-od-primary/30',
                             'transition-all duration-200',
                           )}
                           onKeyDown={(e) => {
@@ -510,7 +510,7 @@ export default function LocalProvidersTab() {
                           className={classNames(
                             'w-full px-3 py-2 rounded-lg text-sm cursor-pointer',
                             'bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor',
-                            'hover:border-purple-500/30 hover:bg-unqops-elements-background-depth-4',
+                            'hover:border-od-primary/30 hover:bg-unqops-elements-background-depth-4',
                             'transition-all duration-200',
                           )}
                         >
@@ -530,7 +530,7 @@ export default function LocalProvidersTab() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="i-ph:cube-duotone text-purple-500" />
+                      <div className="i-ph:cube-duotone text-od-primary" />
                       <h4 className="text-sm font-medium text-unqops-elements-textPrimary">Installed Models</h4>
                     </div>
                     {isLoadingModels ? (
@@ -565,7 +565,7 @@ export default function LocalProvidersTab() {
                             href="https://ollama.com/library"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-purple-500 hover:underline inline-flex items-center gap-0.5 text-base font-medium"
+                            className="text-od-primary hover:underline inline-flex items-center gap-0.5 text-base font-medium"
                           >
                             ollama.com/library
                             <div className="i-ph:arrow-square-out text-xs" />
@@ -654,7 +654,7 @@ export default function LocalProvidersTab() {
                         className={classNames(
                           'w-12 h-12 flex items-center justify-center rounded-xl',
                           'bg-unqops-elements-background-depth-3',
-                          provider.settings.enabled ? 'text-purple-500' : 'text-unqops-elements-textSecondary',
+                          provider.settings.enabled ? 'text-od-primary' : 'text-unqops-elements-textSecondary',
                         )}
                         whileHover={{ scale: 1.1, rotate: 5 }}
                       >
@@ -667,11 +667,11 @@ export default function LocalProvidersTab() {
                         <div className="flex items-center gap-2">
                           <h3 className="text-base font-semibold text-unqops-elements-textPrimary">{provider.name}</h3>
                           <div className="flex gap-1">
-                            <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-500">
+                            <span className="px-2 py-0.5 text-xs rounded-full bg-od-success/10 text-od-success">
                               Local
                             </span>
                             {URL_CONFIGURABLE_PROVIDERS.includes(provider.name) && (
-                              <span className="px-2 py-0.5 text-xs rounded-full bg-purple-500/10 text-purple-500">
+                              <span className="px-2 py-0.5 text-xs rounded-full bg-od-primary/10 text-od-primary">
                                 Configurable
                               </span>
                             )}
@@ -709,7 +709,7 @@ export default function LocalProvidersTab() {
                                 'w-full px-3 py-2 rounded-lg text-sm',
                                 'bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor',
                                 'text-unqops-elements-textPrimary placeholder-unqops-elements-textTertiary',
-                                'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
+                                'focus:outline-none focus:ring-2 focus:ring-od-primary/30',
                                 'transition-all duration-200',
                               )}
                               onKeyDown={(e) => {
@@ -728,7 +728,7 @@ export default function LocalProvidersTab() {
                               className={classNames(
                                 'w-full px-3 py-2 rounded-lg text-sm cursor-pointer',
                                 'bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor',
-                                'hover:border-purple-500/30 hover:bg-unqops-elements-background-depth-4',
+                                'hover:border-od-primary/30 hover:bg-unqops-elements-background-depth-4',
                                 'transition-all duration-200',
                               )}
                             >
@@ -758,9 +758,9 @@ function ModelStatusBadge({ status }: { status?: string }) {
   }
 
   const statusConfig = {
-    updating: { bg: 'bg-yellow-500/10', text: 'text-yellow-500', label: 'Updating' },
-    updated: { bg: 'bg-green-500/10', text: 'text-green-500', label: 'Updated' },
-    error: { bg: 'bg-red-500/10', text: 'text-red-500', label: 'Error' },
+    updating: { bg: 'bg-od-warning/10', text: 'text-od-warning', label: 'Updating' },
+    updated: { bg: 'bg-od-success/10', text: 'text-od-success', label: 'Updated' },
+    error: { bg: 'bg-od-danger/10', text: 'text-od-danger', label: 'Error' },
   };
 
   const config = statusConfig[status as keyof typeof statusConfig];

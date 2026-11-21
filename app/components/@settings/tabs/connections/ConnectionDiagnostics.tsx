@@ -259,8 +259,8 @@ export default function ConnectionDiagnostics() {
                   className={classNames(
                     'text-xl font-semibold',
                     diagnosticResults.localStorage.hasGithubConnection
-                      ? 'text-green-500 dark:text-green-400'
-                      : 'text-red-500 dark:text-red-400',
+                      ? 'text-od-success dark:text-od-success'
+                      : 'text-od-danger dark:text-od-danger',
                   )}
                 >
                   {diagnosticResults.localStorage.hasGithubConnection ? 'Connected' : 'Not Connected'}
@@ -325,8 +325,8 @@ export default function ConnectionDiagnostics() {
                   className={classNames(
                     'text-xl font-semibold',
                     diagnosticResults.localStorage.hasNetlifyConnection
-                      ? 'text-green-500 dark:text-green-400'
-                      : 'text-red-500 dark:text-red-400',
+                      ? 'text-od-success dark:text-od-success'
+                      : 'text-od-danger dark:text-od-danger',
                   )}
                 >
                   {diagnosticResults.localStorage.hasNetlifyConnection ? 'Connected' : 'Not Connected'}
@@ -390,8 +390,8 @@ export default function ConnectionDiagnostics() {
                   className={classNames(
                     'text-xl font-semibold',
                     diagnosticResults.localStorage.hasVercelConnection
-                      ? 'text-green-500 dark:text-green-400'
-                      : 'text-red-500 dark:text-red-400',
+                      ? 'text-od-success dark:text-od-success'
+                      : 'text-od-danger dark:text-od-danger',
                   )}
                 >
                   {diagnosticResults.localStorage.hasVercelConnection ? 'Connected' : 'Not Connected'}
@@ -455,8 +455,8 @@ export default function ConnectionDiagnostics() {
                   className={classNames(
                     'text-xl font-semibold',
                     diagnosticResults.localStorage.hasSupabaseConnection
-                      ? 'text-green-500 dark:text-green-400'
-                      : 'text-red-500 dark:text-red-400',
+                      ? 'text-od-success dark:text-od-success'
+                      : 'text-od-danger dark:text-od-danger',
                   )}
                 >
                   {diagnosticResults.localStorage.hasSupabaseConnection ? 'Configured' : 'Not Configured'}
@@ -567,7 +567,7 @@ export default function ConnectionDiagnostics() {
             <CollapsibleTrigger className="w-full">
               <div className="flex items-center justify-between p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 dark:hover:border-unqops-elements-borderColorActive/70 transition-all duration-200">
                 <div className="flex items-center gap-2">
-                  <CodeBracketIcon className="w-4 h-4 text-blue-500" />
+                  <CodeBracketIcon className="w-4 h-4 text-od-info" />
                   <span className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
                     Diagnostic Details
                   </span>

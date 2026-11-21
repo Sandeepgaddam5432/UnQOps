@@ -118,7 +118,7 @@ const FileModifiedDropdown = memo(
                         placeholder="Search files..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg bg-unqops-elements-background-depth-1 border border-unqops-elements-borderColor focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg bg-unqops-elements-background-depth-1 border border-unqops-elements-borderColor focus:outline-none focus:ring-2 focus:ring-od-info/50"
                       />
                       <div className="absolute left-2 top-1/2 -translate-y-1/2 text-unqops-elements-textTertiary">
                         <div className="i-ph:magnifying-glass" />
@@ -225,8 +225,8 @@ const FileModifiedDropdown = memo(
                                       return (
                                         showStats && (
                                           <div className="flex items-center gap-1 text-xs shrink-0">
-                                            {additions > 0 && <span className="text-green-500">+{additions}</span>}
-                                            {deletions > 0 && <span className="text-red-500">-{deletions}</span>}
+                                            {additions > 0 && <span className="text-od-success">+{additions}</span>}
+                                            {deletions > 0 && <span className="text-od-danger">-{deletions}</span>}
                                           </div>
                                         )
                                       );
@@ -417,7 +417,7 @@ export const Workbench = memo(
                             'min-w-[240px] z-[250]',
                             'bg-white dark:bg-[#141414]',
                             'rounded-lg shadow-lg',
-                            'border border-gray-200/50 dark:border-gray-800/50',
+                            'border border-od-border/50 dark:border-od-border/50',
                             'animate-in fade-in-0 zoom-in-95',
                             'py-1',
                           )}

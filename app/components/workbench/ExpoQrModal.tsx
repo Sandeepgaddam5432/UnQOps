@@ -45,7 +45,7 @@ export const ExpoQrModal: React.FC<ExpoQrModalProps> = ({ open, onClose }) => {
                 size={200}
               />
             ) : (
-              <div className="text-gray-500 text-center">No Expo URL detected.</div>
+              <div className="text-od-fg-muted text-center">No Expo URL detected.</div>
             )}
           </div>
         </div>

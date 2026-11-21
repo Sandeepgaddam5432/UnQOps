@@ -167,47 +167,47 @@ export function FileIcon({ filename, size = 'md', className }: FileIconProps) {
   const getIconColorForExtension = (extension: string): string => {
     // Code files
     if (['js', 'jsx'].includes(extension)) {
-      return 'text-yellow-500';
+      return 'text-od-warning';
     }
 
     if (['ts', 'tsx'].includes(extension)) {
-      return 'text-blue-500';
+      return 'text-od-info';
     }
 
     if (['html', 'htm', 'xhtml'].includes(extension)) {
-      return 'text-orange-500';
+      return 'text-od-warning';
     }
 
     if (['css', 'scss', 'sass', 'less'].includes(extension)) {
-      return 'text-blue-400';
+      return 'text-od-info';
     }
 
     if (['json', 'jsonc'].includes(extension)) {
-      return 'text-yellow-400';
+      return 'text-od-warning';
     }
 
     if (['md', 'markdown'].includes(extension)) {
-      return 'text-gray-500';
+      return 'text-od-fg-muted';
     }
 
     if (['py', 'pyc', 'pyd', 'pyo'].includes(extension)) {
-      return 'text-green-500';
+      return 'text-od-success';
     }
 
     if (['java', 'class', 'jar'].includes(extension)) {
-      return 'text-red-500';
+      return 'text-od-danger';
     }
 
     if (['php'].includes(extension)) {
-      return 'text-purple-500';
+      return 'text-od-primary';
     }
 
     if (['rb', 'ruby'].includes(extension)) {
-      return 'text-red-600';
+      return 'text-od-danger';
     }
 
     if (['c', 'cpp', 'h', 'hpp', 'cc'].includes(extension)) {
-      return 'text-blue-600';
+      return 'text-od-info';
     }
 
     if (['go'].includes(extension)) {
@@ -215,15 +215,15 @@ export function FileIcon({ filename, size = 'md', className }: FileIconProps) {
     }
 
     if (['rs', 'rust'].includes(extension)) {
-      return 'text-orange-600';
+      return 'text-od-warning';
     }
 
     if (['swift'].includes(extension)) {
-      return 'text-orange-500';
+      return 'text-od-warning';
     }
 
     if (['kt', 'kotlin'].includes(extension)) {
-      return 'text-purple-400';
+      return 'text-od-primary';
     }
 
     if (['dart'].includes(extension)) {
@@ -232,48 +232,48 @@ export function FileIcon({ filename, size = 'md', className }: FileIconProps) {
 
     // Config files
     if (['yml', 'yaml'].includes(extension)) {
-      return 'text-purple-300';
+      return 'text-od-primary';
     }
 
     if (['xml'].includes(extension)) {
-      return 'text-orange-300';
+      return 'text-od-warning';
     }
 
     if (['svg'].includes(extension)) {
-      return 'text-green-400';
+      return 'text-od-success';
     }
 
     if (['toml'].includes(extension)) {
-      return 'text-gray-500';
+      return 'text-od-fg-muted';
     }
 
     if (['ini', 'conf', 'config'].includes(extension)) {
-      return 'text-gray-500';
+      return 'text-od-fg-muted';
     }
 
     if (['env', 'env.local', 'env.development', 'env.production'].includes(extension)) {
-      return 'text-green-500';
+      return 'text-od-success';
     }
 
     // Document files
     if (['pdf'].includes(extension)) {
-      return 'text-red-500';
+      return 'text-od-danger';
     }
 
     if (['doc', 'docx'].includes(extension)) {
-      return 'text-blue-600';
+      return 'text-od-info';
     }
 
     if (['xls', 'xlsx'].includes(extension)) {
-      return 'text-green-600';
+      return 'text-od-success';
     }
 
     if (['ppt', 'pptx'].includes(extension)) {
-      return 'text-red-600';
+      return 'text-od-danger';
     }
 
     if (['txt'].includes(extension)) {
-      return 'text-gray-500';
+      return 'text-od-fg-muted';
     }
 
     // Image files
@@ -283,45 +283,45 @@ export function FileIcon({ filename, size = 'md', className }: FileIconProps) {
 
     // Audio/Video files
     if (['mp3', 'wav', 'ogg', 'flac', 'aac'].includes(extension)) {
-      return 'text-green-500';
+      return 'text-od-success';
     }
 
     if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(extension)) {
-      return 'text-blue-500';
+      return 'text-od-info';
     }
 
     // Archive files
     if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2'].includes(extension)) {
-      return 'text-yellow-600';
+      return 'text-od-warning';
     }
 
     // Special files
     if (filename === 'package.json') {
-      return 'text-red-400';
+      return 'text-od-danger';
     }
 
     if (filename === 'tsconfig.json') {
-      return 'text-blue-500';
+      return 'text-od-info';
     }
 
     if (filename === 'README.md') {
-      return 'text-blue-400';
+      return 'text-od-info';
     }
 
     if (filename === 'LICENSE') {
-      return 'text-gray-500';
+      return 'text-od-fg-muted';
     }
 
     if (filename === '.gitignore') {
-      return 'text-orange-500';
+      return 'text-od-warning';
     }
 
     if (filename.startsWith('Dockerfile')) {
-      return 'text-blue-500';
+      return 'text-od-info';
     }
 
     // Default
-    return 'text-gray-400';
+    return 'text-od-fg-soft';
   };
 
   const getSizeClass = (size: 'sm' | 'md' | 'lg'): string => {

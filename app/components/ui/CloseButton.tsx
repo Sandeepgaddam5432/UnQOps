@@ -35,7 +35,7 @@ export function CloseButton({ onClick, className, size = 'md' }: CloseButtonProp
         'text-unqops-elements-textTertiary hover:text-unqops-elements-textSecondary',
         'rounded-lg hover:bg-unqops-elements-background-depth-2 dark:hover:bg-unqops-elements-background-depth-3',
         'transition-colors duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-purple-500/50',
+        'focus:outline-none focus:ring-2 focus:ring-od-primary/50',
         sizeClasses[size],
         className,
       )}

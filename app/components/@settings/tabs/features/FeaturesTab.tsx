@@ -49,10 +49,10 @@ const FeatureCard = memo(
             <div className="flex items-center gap-2">
               <h4 className="font-medium text-unqops-elements-textPrimary">{feature.title}</h4>
               {feature.beta && (
-                <span className="px-2 py-0.5 text-xs rounded-full bg-blue-500/10 text-blue-500 font-medium">Beta</span>
+                <span className="px-2 py-0.5 text-xs rounded-full bg-od-info/10 text-od-info font-medium">Beta</span>
               )}
               {feature.experimental && (
-                <span className="px-2 py-0.5 text-xs rounded-full bg-orange-500/10 text-orange-500 font-medium">
+                <span className="px-2 py-0.5 text-xs rounded-full bg-od-warning/10 text-od-warning font-medium">
                   Experimental
                 </span>
               )}
@@ -89,7 +89,7 @@ const FeatureSection = memo(
       transition={{ duration: 0.3 }}
     >
       <div className="flex items-center gap-3">
-        <div className={classNames(icon, 'text-xl text-purple-500')} />
+        <div className={classNames(icon, 'text-xl text-od-primary')} />
         <div>
           <h3 className="text-lg font-medium text-unqops-elements-textPrimary">{title}</h3>
           <p className="text-sm text-unqops-elements-textSecondary">{description}</p>
@@ -254,13 +254,13 @@ export default function FeaturesTab() {
               'p-2 rounded-lg text-xl',
               'bg-unqops-elements-background-depth-3 group-hover:bg-unqops-elements-background-depth-4',
               'transition-colors duration-200',
-              'text-purple-500',
+              'text-od-primary',
             )}
           >
             <div className="i-ph:book" />
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-medium text-unqops-elements-textPrimary group-hover:text-purple-500 transition-colors">
+            <h4 className="text-sm font-medium text-unqops-elements-textPrimary group-hover:text-od-primary transition-colors">
               Prompt Library
             </h4>
             <p className="text-xs text-unqops-elements-textSecondary mt-0.5">
@@ -277,8 +277,8 @@ export default function FeaturesTab() {
               'p-2 rounded-lg text-sm min-w-[200px]',
               'bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor',
               'text-unqops-elements-textPrimary',
-              'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
-              'group-hover:border-purple-500/30',
+              'focus:outline-none focus:ring-2 focus:ring-od-primary/30',
+              'group-hover:border-od-primary/30',
               'transition-all duration-200',
             )}
           >

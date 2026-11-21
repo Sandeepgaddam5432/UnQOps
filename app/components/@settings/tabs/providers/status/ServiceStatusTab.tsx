@@ -663,13 +663,13 @@ const ServiceStatusTab = () => {
   const getStatusColor = (status: ServiceStatus['status']) => {
     switch (status) {
       case 'operational':
-        return 'text-green-500';
+        return 'text-od-success';
       case 'degraded':
-        return 'text-yellow-500';
+        return 'text-od-warning';
       case 'down':
-        return 'text-red-500';
+        return 'text-od-danger';
       default:
-        return 'text-gray-500';
+        return 'text-od-fg-muted';
     }
   };
 
@@ -700,7 +700,7 @@ const ServiceStatusTab = () => {
               className={classNames(
                 'w-8 h-8 flex items-center justify-center rounded-lg',
                 'bg-unqops-elements-background-depth-3',
-                'text-purple-500',
+                'text-od-primary',
               )}
             >
               <TbActivityHeartbeat className="w-5 h-5" />
@@ -745,7 +745,7 @@ const ServiceStatusTab = () => {
                 'flex-1 px-3 py-1.5 rounded-lg text-sm max-w-[200px]',
                 'bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor',
                 'text-unqops-elements-textPrimary',
-                'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
+                'focus:outline-none focus:ring-2 focus:ring-od-primary/30',
               )}
             >
               <option value="">Select Provider</option>
@@ -764,7 +764,7 @@ const ServiceStatusTab = () => {
                 'flex-1 px-3 py-1.5 rounded-lg text-sm',
                 'bg-unqops-elements-background-depth-3 border border-unqops-elements-borderColor',
                 'text-unqops-elements-textPrimary placeholder-unqops-elements-textTertiary',
-                'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
+                'focus:outline-none focus:ring-2 focus:ring-od-primary/30',
               )}
             />
             <button
@@ -774,7 +774,7 @@ const ServiceStatusTab = () => {
               disabled={!testProvider || !testApiKey || testingStatus === 'testing'}
               className={classNames(
                 'px-4 py-1.5 rounded-lg text-sm',
-                'bg-purple-500 hover:bg-purple-600',
+                'bg-od-primary hover:bg-od-primary',
                 'text-white',
                 'transition-all duration-200',
                 'flex items-center gap-2',

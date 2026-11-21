@@ -319,21 +319,21 @@ const diffPanelStyles = 'h-full overflow-auto diff-panel-content';
 
 // Updated color styles for better consistency
 const diffLineStyles = {
-  added: 'bg-green-500/10 dark:bg-green-500/20 border-l-4 border-green-500',
-  removed: 'bg-red-500/10 dark:bg-red-500/20 border-l-4 border-red-500',
+  added: 'bg-od-success/10 dark:bg-od-success/20 border-l-4 border-od-success',
+  removed: 'bg-od-danger/10 dark:bg-od-danger/20 border-l-4 border-od-danger',
   unchanged: '',
 };
 
 const changeColorStyles = {
-  added: 'text-green-700 dark:text-green-500 bg-green-500/10 dark:bg-green-500/20',
-  removed: 'text-red-700 dark:text-red-500 bg-red-500/10 dark:bg-red-500/20',
+  added: 'text-od-success dark:text-od-success bg-od-success/10 dark:bg-od-success/20',
+  removed: 'text-od-danger dark:text-od-danger bg-od-danger/10 dark:bg-od-danger/20',
   unchanged: 'text-unqops-elements-textPrimary',
 };
 
 const renderContentWarning = (type: 'binary' | 'error') => (
   <div className="h-full flex items-center justify-center p-4">
     <div className="text-center text-unqops-elements-textTertiary">
-      <div className={`i-ph:${type === 'binary' ? 'file-x' : 'warning-circle'} text-4xl text-red-400 mb-2 mx-auto`} />
+      <div className={`i-ph:${type === 'binary' ? 'file-x' : 'warning-circle'} text-4xl text-od-danger mb-2 mx-auto`} />
       <p className="font-medium text-unqops-elements-textPrimary">
         {type === 'binary' ? 'Binary file detected' : 'Error processing file'}
       </p>
@@ -358,7 +358,7 @@ const NoChangesView = memo(
   }) => (
     <div className="h-full flex flex-col items-center justify-center p-4">
       <div className="text-center text-unqops-elements-textTertiary">
-        <div className="i-ph:files text-4xl text-green-400 mb-2 mx-auto" />
+        <div className="i-ph:files text-4xl text-od-success mb-2 mx-auto" />
         <p className="font-medium text-unqops-elements-textPrimary">Files are identical</p>
         <p className="text-sm mt-1">Both versions match exactly</p>
       </div>
@@ -457,8 +457,8 @@ const CodeLine = memo(
         <div className={lineNumberStyles}>{lineNumber + 1}</div>
         <div className={`${lineContentStyles} ${bgColor}`}>
           <span className="mr-2 text-unqops-elements-textTertiary">
-            {type === 'added' && <span className="text-green-700 dark:text-green-500">+</span>}
-            {type === 'removed' && <span className="text-red-700 dark:text-red-500">-</span>}
+            {type === 'added' && <span className="text-od-success dark:text-od-success">+</span>}
+            {type === 'removed' && <span className="text-od-danger dark:text-od-danger">-</span>}
             {type === 'unchanged' && ' '}
           </span>
           {renderContent()}
@@ -524,15 +524,15 @@ const FileInfo = memo(
             <>
               {showStats && (
                 <div className="flex items-center gap-1 text-xs">
-                  {additions > 0 && <span className="text-green-700 dark:text-green-500">+{additions}</span>}
-                  {deletions > 0 && <span className="text-red-700 dark:text-red-500">-{deletions}</span>}
+                  {additions > 0 && <span className="text-od-success dark:text-od-success">+{additions}</span>}
+                  {deletions > 0 && <span className="text-od-danger dark:text-od-danger">-{deletions}</span>}
                 </div>
               )}
-              <span className="text-yellow-600 dark:text-yellow-400">Modified</span>
+              <span className="text-od-warning dark:text-od-warning">Modified</span>
               <span className="text-unqops-elements-textTertiary text-xs">{new Date().toLocaleTimeString()}</span>
             </>
           ) : (
-            <span className="text-green-700 dark:text-green-400">No Changes</span>
+            <span className="text-od-success dark:text-od-success">No Changes</span>
           )}
           <FullscreenButton onClick={onToggleFullscreen} isFullscreen={isFullscreen} />
         </span>
@@ -785,7 +785,7 @@ export const DiffView = memo(({ fileHistory, setFileHistory }: DiffViewProps) =>
   } catch (error) {
     console.error('DiffView render error:', error);
     return (
-      <div className="flex w-full h-full justify-center items-center bg-unqops-elements-background-depth-1 text-red-400">
+      <div className="flex w-full h-full justify-center items-center bg-unqops-elements-background-depth-1 text-od-danger">
         <div className="text-center">
           <div className="i-ph:warning-circle text-4xl mb-2" />
           <p>Failed to render diff view</p>

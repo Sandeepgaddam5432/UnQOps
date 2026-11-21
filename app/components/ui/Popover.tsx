@@ -19,10 +19,10 @@ export default ({
         sideOffset={10}
         side={side}
         align={align}
-        className="bg-unqops-elements-background-depth-2 text-unqops-elements-item-contentAccent p-2 rounded-md shadow-xl z-workbench"
+        className="border border-od-border bg-od-surface text-od-fg p-2 rounded-od-card shadow-od-lg z-workbench"
       >
         {children}
-        <Popover.Arrow className="bg-unqops-elements-background-depth-2" />
+        <Popover.Arrow className="fill-od-surface" />
       </Popover.Content>
     </Popover.Portal>
   </Popover.Root>

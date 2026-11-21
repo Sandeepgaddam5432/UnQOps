@@ -321,7 +321,7 @@ export function DataVisualization({ chats }: DataVisualizationProps) {
 
   const cardClasses = classNames(
     'p-6 rounded-lg shadow-sm',
-    'bg-unqops-elements-bg-depth-1',
+    'bg-unqops-elements-background-depth-1',
     'border border-unqops-elements-borderColor',
   );
 
@@ -333,7 +333,7 @@ export function DataVisualization({ chats }: DataVisualizationProps) {
         <div className={cardClasses}>
           <h3 className="text-lg font-medium text-unqops-elements-textPrimary mb-4">Total Chats</h3>
           <div className={statClasses}>
-            <div className="i-ph-chats-duotone w-8 h-8 text-indigo-500 dark:text-indigo-400" />
+            <div className="i-ph-chats-duotone w-8 h-8 text-od-primary dark:text-od-primary" />
             <span>{chats.length}</span>
           </div>
         </div>
@@ -349,7 +349,7 @@ export function DataVisualization({ chats }: DataVisualizationProps) {
         <div className={cardClasses}>
           <h3 className="text-lg font-medium text-unqops-elements-textPrimary mb-4">Avg. Messages/Chat</h3>
           <div className={statClasses}>
-            <div className="i-ph-chart-bar-duotone w-8 h-8 text-green-500 dark:text-green-400" />
+            <div className="i-ph-chart-bar-duotone w-8 h-8 text-od-success dark:text-od-success" />
             <span>{averageMessagesPerChat.toFixed(1)}</span>
           </div>
         </div>
