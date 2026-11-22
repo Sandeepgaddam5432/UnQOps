@@ -4,7 +4,9 @@ import { toast } from 'react-toastify';
 import { Dialog, DialogButton, DialogDescription, DialogRoot, DialogTitle } from '~/components/ui/Dialog';
 import { ThemeSwitch } from '~/components/ui/ThemeSwitch';
 import { ControlPanel } from '~/components/@settings/core/ControlPanel';
+import { ThemeCustomizerDrawer } from '~/components/@settings/tabs/settings/ThemeCustomizerDrawer';
 import { SettingsButton } from '~/components/ui/SettingsButton';
+import { openThemeCustomizer } from '~/lib/stores/theme';
 import { Button } from '~/components/ui/Button';
 import { db, deleteById, getAll, chatId, type ChatHistoryItem, useChatHistory } from '~/lib/persistence';
 import { cubicEasingFn } from '~/utils/easings';
@@ -526,12 +528,27 @@ export const Menu = () => {
           </div>
           <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-800 px-4 py-3">
             <SettingsButton onClick={handleSettingsClick} />
-            <ThemeSwitch />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Open Theme Studio"
+                title="Theme Studio"
+                onClick={() => {
+                  openThemeCustomizer();
+                  setOpen(false);
+                }}
+                className="inline-flex size-10 items-center justify-center rounded-full text-unqops-elements-textSecondary transition-colors hover:bg-unqops-elements-item-backgroundActive hover:text-unqops-elements-textPrimary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unqops-elements-focus"
+              >
+                <span className="i-ph:palette size-5" aria-hidden="true" />
+              </button>
+              <ThemeSwitch />
+            </div>
           </div>
         </div>
       </motion.div>
 
       <ControlPanel open={isSettingsOpen} onClose={handleSettingsClose} />
+      <ThemeCustomizerDrawer />
     </>
   );
 };

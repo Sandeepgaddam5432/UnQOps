@@ -1,19 +1,80 @@
-import { type ActionFunctionArgs, json } from '@remix-run/cloudflare';
+import { type ActionFunctionArgs, json as baseJson } from '@remix-run/cloudflare';
 import crypto from 'crypto';
 import type { NetlifySiteInfo } from '~/types/netlify';
+import {
+  createDeploymentName,
+  isSameOriginRequest,
+  readJsonBody,
+  RequestBodyTooLargeError,
+  isValidProviderResourceId,
+  isValidProviderToken,
+  sanitizeDeploymentFiles,
+} from '~/lib/api/deployment-security';
+
+function json(data: unknown, init?: ResponseInit): Response {
+  const headers = new Headers(init?.headers);
+  headers.set('Cache-Control', 'private, no-store');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Vary', 'Origin');
+
+  return baseJson(data, { ...init, headers });
+}
 
 interface DeployRequestBody {
   siteId?: string;
-  files: Record<string, string>;
-  chatId: string;
+  files?: Record<string, string>;
+  chatId?: string;
+  token?: string;
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  try {
-    const { siteId, files, token, chatId } = (await request.json()) as DeployRequestBody & { token: string };
+const MAX_DEPLOY_BODY_BYTES = 20_000_000;
 
-    if (!token) {
+export async function action({ request }: ActionFunctionArgs) {
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, { status: 405, headers: { Allow: 'POST' } });
+  }
+
+  if (!isSameOriginRequest(request)) {
+    return json({ error: 'Same-origin requests are required' }, { status: 403 });
+  }
+
+  if (request.headers.get('Content-Type')?.split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
+    return json({ error: 'Content-Type must be application/json' }, { status: 415 });
+  }
+
+  let parsedBody: unknown;
+
+  try {
+    parsedBody = await readJsonBody(request, MAX_DEPLOY_BODY_BYTES);
+  } catch (error) {
+    const isTooLarge = error instanceof RequestBodyTooLargeError;
+    return json(
+      { error: isTooLarge ? 'Deployment request is too large' : 'Invalid deployment request body' },
+      { status: isTooLarge ? 413 : 400 },
+    );
+  }
+
+  try {
+    if (typeof parsedBody !== 'object' || parsedBody === null || Array.isArray(parsedBody)) {
+      return json({ error: 'Invalid deployment request' }, { status: 400 });
+    }
+
+    const body = parsedBody as DeployRequestBody;
+    const { siteId, token, chatId } = body;
+    const files = sanitizeDeploymentFiles(body.files);
+
+    if (!isValidProviderToken(token)) {
       return json({ error: 'Not connected to Netlify' }, { status: 401 });
+    }
+
+    if (
+      !files ||
+      (siteId !== undefined && !isValidProviderResourceId(siteId)) ||
+      typeof chatId !== 'string' ||
+      chatId.length === 0 ||
+      chatId.length > 128
+    ) {
+      return json({ error: 'Invalid deployment files or metadata' }, { status: 400 });
     }
 
     let targetSiteId = siteId;
@@ -21,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // If no siteId provided, create a new site
     if (!targetSiteId) {
-      const siteName = `unqops-diy-${chatId}-${Date.now()}`;
+      const siteName = createDeploymentName(chatId);
       const createSiteResponse = await fetch('https://api.netlify.com/api/v1/sites', {
         method: 'POST',
         headers: {
@@ -70,7 +131,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       // If no siteId provided or site doesn't exist, create a new site
       if (!targetSiteId) {
-        const siteName = `unqops-diy-${chatId}-${Date.now()}`;
+        const siteName = createDeploymentName(chatId);
         const createSiteResponse = await fetch('https://api.netlify.com/api/v1/sites', {
           method: 'POST',
           headers: {
@@ -99,11 +160,11 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // Create file digests
-    const fileDigests: Record<string, string> = {};
+    const fileDigests: Record<string, string> = Object.create(null);
 
     for (const [filePath, content] of Object.entries(files)) {
       // Ensure file path starts with a forward slash
-      const normalizedPath = filePath.startsWith('/') ? filePath : '/' + filePath;
+      const normalizedPath = `/${filePath}`;
       const hash = crypto.createHash('sha1').update(content).digest('hex');
       fileDigests[normalizedPath] = hash;
     }
@@ -147,7 +208,7 @@ export async function action({ request }: ActionFunctionArgs) {
       if (status.state === 'prepared' || status.state === 'uploaded') {
         // Upload all files regardless of required array
         for (const [filePath, content] of Object.entries(files)) {
-          const normalizedPath = filePath.startsWith('/') ? filePath : '/' + filePath;
+          const encodedPath = `/${filePath.split('/').map(encodeURIComponent).join('/')}`;
 
           let uploadSuccess = false;
           let uploadRetries = 0;
@@ -155,7 +216,7 @@ export async function action({ request }: ActionFunctionArgs) {
           while (!uploadSuccess && uploadRetries < 3) {
             try {
               const uploadResponse = await fetch(
-                `https://api.netlify.com/api/v1/deploys/${deploy.id}/files${normalizedPath}`,
+                `https://api.netlify.com/api/v1/deploys/${deploy.id}/files${encodedPath}`,
                 {
                   method: 'PUT',
                   headers: {
@@ -169,12 +230,12 @@ export async function action({ request }: ActionFunctionArgs) {
               uploadSuccess = uploadResponse.ok;
 
               if (!uploadSuccess) {
-                console.error('Upload failed:', await uploadResponse.text());
+                console.error('Netlify file upload failed with status:', uploadResponse.status);
                 uploadRetries++;
                 await new Promise((resolve) => setTimeout(resolve, 2000));
               }
-            } catch (error) {
-              console.error('Upload error:', error);
+            } catch {
+              console.error('Netlify file upload request failed');
               uploadRetries++;
               await new Promise((resolve) => setTimeout(resolve, 2000));
             }
@@ -222,8 +283,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
       site: siteInfo,
     });
-  } catch (error) {
-    console.error('Deploy error:', error);
+  } catch {
     return json({ error: 'Deployment failed' }, { status: 500 });
   }
 }

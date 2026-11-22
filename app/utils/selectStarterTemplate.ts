@@ -92,6 +92,7 @@ export const selectStarterTemplate = async (options: { message: string; model: s
   };
   const response = await fetch('/api/llmcall', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(requestBody),
   });
   const respJson: { text: string } = await response.json();

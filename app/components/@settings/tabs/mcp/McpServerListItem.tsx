@@ -1,4 +1,4 @@
-import type { Tool } from 'ai';
+import type { MCPToolSummary } from '~/lib/api/mcp-security';
 
 type ParameterProperty = {
   type?: string;
@@ -14,7 +14,7 @@ type ToolParameters = {
 
 type McpToolProps = {
   toolName: string;
-  toolSchema: Tool;
+  toolSchema: MCPToolSummary;
 };
 
 export default function McpServerListItem({ toolName, toolSchema }: McpToolProps) {

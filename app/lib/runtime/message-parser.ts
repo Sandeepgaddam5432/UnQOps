@@ -9,6 +9,8 @@ const ARTIFACT_ACTION_TAG_OPEN = '<boltAction';
 const ARTIFACT_ACTION_TAG_CLOSE = '</boltAction>';
 const BOLT_QUICK_ACTIONS_OPEN = '<unqops-quick-actions>';
 const BOLT_QUICK_ACTIONS_CLOSE = '</unqops-quick-actions>';
+const STREAMED_OPEN_TAGS = [ARTIFACT_TAG_OPEN, BOLT_QUICK_ACTIONS_OPEN] as const;
+const MAX_STREAMED_OPEN_TAG_LENGTH = Math.max(...STREAMED_OPEN_TAGS.map((tag) => tag.length));
 
 const logger = createScopedLogger('MessageParser');
 
@@ -96,36 +98,36 @@ export class StreamingMessageParser {
 
     while (i < input.length) {
       if (input.startsWith(BOLT_QUICK_ACTIONS_OPEN, i)) {
-        console.log('input:', input.slice(i));
-
         const actionsBlockEnd = input.indexOf(BOLT_QUICK_ACTIONS_CLOSE, i);
 
-        if (actionsBlockEnd !== -1) {
-          const actionsBlockContent = input.slice(i + BOLT_QUICK_ACTIONS_OPEN.length, actionsBlockEnd);
-
-          // Find all <unqops-quick-action ...>label</unqops-quick-action> inside
-          const quickActionRegex = /<unqops-quick-action([^>]*)>([\s\S]*?)<\/unqops-quick-action>/g;
-          let match;
-          const buttons = [];
-
-          while ((match = quickActionRegex.exec(actionsBlockContent)) !== null) {
-            const tagAttrs = match[1];
-            const label = match[2];
-            const type = this.#extractAttribute(tagAttrs, 'type');
-            const message = this.#extractAttribute(tagAttrs, 'message');
-            const path = this.#extractAttribute(tagAttrs, 'path');
-            const href = this.#extractAttribute(tagAttrs, 'href');
-            buttons.push(
-              createQuickActionElement(
-                { type: type || '', message: message || '', path: path || '', href: href || '' },
-                label,
-              ),
-            );
-          }
-          output += createQuickActionGroup(buttons);
-          i = actionsBlockEnd + BOLT_QUICK_ACTIONS_CLOSE.length;
-          continue;
+        if (actionsBlockEnd === -1) {
+          break;
         }
+
+        const actionsBlockContent = input.slice(i + BOLT_QUICK_ACTIONS_OPEN.length, actionsBlockEnd);
+
+        // Find all <unqops-quick-action ...>label</unqops-quick-action> inside
+        const quickActionRegex = /<unqops-quick-action([^>]*)>([\s\S]*?)<\/unqops-quick-action>/g;
+        let match;
+        const buttons = [];
+
+        while ((match = quickActionRegex.exec(actionsBlockContent)) !== null) {
+          const tagAttrs = match[1];
+          const label = match[2];
+          const type = this.#extractAttribute(tagAttrs, 'type');
+          const message = this.#extractAttribute(tagAttrs, 'message');
+          const path = this.#extractAttribute(tagAttrs, 'path');
+          const href = this.#extractAttribute(tagAttrs, 'href');
+          buttons.push(
+            createQuickActionElement(
+              { type: type || '', message: message || '', path: path || '', href: href || '' },
+              label,
+            ),
+          );
+        }
+        output += createQuickActionGroup(buttons);
+        i = actionsBlockEnd + BOLT_QUICK_ACTIONS_CLOSE.length;
+        continue;
       }
 
       if (state.insideArtifact) {
@@ -236,7 +238,7 @@ export class StreamingMessageParser {
         let j = i;
         let potentialTag = '';
 
-        while (j < input.length && potentialTag.length < ARTIFACT_TAG_OPEN.length) {
+        while (j < input.length && potentialTag.length < MAX_STREAMED_OPEN_TAG_LENGTH) {
           potentialTag += input[j];
 
           if (potentialTag === ARTIFACT_TAG_OPEN) {
@@ -287,7 +289,7 @@ export class StreamingMessageParser {
             }
 
             break;
-          } else if (!ARTIFACT_TAG_OPEN.startsWith(potentialTag)) {
+          } else if (!STREAMED_OPEN_TAGS.some((tag) => tag.startsWith(potentialTag))) {
             output += input.slice(i, j + 1);
             i = j + 1;
             break;
@@ -296,7 +298,7 @@ export class StreamingMessageParser {
           j++;
         }
 
-        if (j === input.length && ARTIFACT_TAG_OPEN.startsWith(potentialTag)) {
+        if (j === input.length && STREAMED_OPEN_TAGS.some((tag) => tag.startsWith(potentialTag))) {
           break;
         }
       } else {
@@ -390,8 +392,6 @@ function createQuickActionElement(props: Record<string, string>, label: string) 
     'data-unqops-quick-action="true"',
     ...Object.entries(props).map(([key, value]) => `data-${camelToDashCase(key)}=${JSON.stringify(value)}`),
   ];
-
-  console.log('elementProps', `<button ${elementProps.join(' ')}>${label}</button>`);
 
   return `<button ${elementProps.join(' ')}>${label}</button>`;
 }

@@ -35,24 +35,28 @@ Deploy UnQOps to Cloudflare Pages with one click:
 ### Option 2: Local Development
 
 #### Prerequisites
+
 - Node.js 18+ ([Download here](https://nodejs.org/))
 - pnpm package manager
 
 #### Installation Steps
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/Sandeepgaddam5432/UnQOps.git
    cd UnQOps
    ```
 
 2. **Install dependencies**:
+
    ```bash
    npm install -g pnpm
    pnpm install
    ```
 
 3. **Start development server**:
+
    ```bash
    pnpm run dev
    ```
@@ -79,21 +83,23 @@ docker compose --profile development up
 2. Click the provider dropdown in the interface
 3. Select your preferred AI provider
 4. Click the edit (pencil) icon
-5. Enter your API key securely
+5. Enter your API key. The key is sent to UnQOps over a same-origin request and stored in an HttpOnly cookie; the UI only displays whether it is set.
+
+API keys can still be exported as plaintext JSON through the explicit export action. HttpOnly does not protect against compromised deployments, browser malware, or injected code invoking same-origin APIs. Review the [security and credential-handling notes](docs/docs/security.md), especially before exposing a self-hosted instance to other users.
 
 ### Supported AI Providers
 
-| Provider | Models Available | Custom Base URL |
-|----------|------------------|-----------------|
-| **OpenAI** | GPT-4, GPT-3.5, etc. | ✅ |
-| **Anthropic** | Claude 3.5 Sonnet, Claude 3 Opus | ✅ |
-| **Google** | Gemini Pro, Gemini Ultra | ❌ |
-| **Ollama** | Llama 2, CodeLlama, Mistral | ✅ |
-| **Groq** | Llama 2, Mixtral | ✅ |
-| **DeepSeek** | DeepSeek Coder | ✅ |
-| **xAI** | Grok Beta | ❌ |
-| **HuggingFace** | Various OSS models | ✅ |
-| **LM Studio** | Local models | ✅ |
+| Provider        | Models Available                 | Custom Base URL |
+| --------------- | -------------------------------- | --------------- |
+| **OpenAI**      | GPT-4, GPT-3.5, etc.             | ✅              |
+| **Anthropic**   | Claude 3.5 Sonnet, Claude 3 Opus | ✅              |
+| **Google**      | Gemini Pro, Gemini Ultra         | ❌              |
+| **Ollama**      | Llama 2, CodeLlama, Mistral      | ✅              |
+| **Groq**        | Llama 2, Mixtral                 | ✅              |
+| **DeepSeek**    | DeepSeek Coder                   | ✅              |
+| **xAI**         | Grok Beta                        | ❌              |
+| **HuggingFace** | Various OSS models               | ✅              |
+| **LM Studio**   | Local models                     | ✅              |
 
 ### Custom Base URLs
 
@@ -111,7 +117,7 @@ For providers supporting custom endpoints:
 UnQOps is optimized for Cloudflare Pages deployment:
 
 1. **One-Click Deploy**: Use the deploy button above
-2. **Manual Deploy**: 
+2. **Manual Deploy**:
    - Fork this repository
    - Connect your GitHub account to Cloudflare Pages
    - Select the repository and deploy
@@ -170,16 +176,17 @@ We welcome contributions! Here's how to get started:
 
 See our [Contributing Guide](CONTRIBUTING.md) for detailed guidelines.
 
-
 ## 📋 Roadmap
 
 ### Current Focus
+
 - Enhanced multi-file editing capabilities
 - Improved AI model performance optimization
 - Advanced project templates and scaffolding
 - Better mobile experience
 
 ### Upcoming Features
+
 - VS Code integration
 - Advanced debugging tools
 - Team collaboration features
@@ -188,9 +195,11 @@ See our [Contributing Guide](CONTRIBUTING.md) for detailed guidelines.
 ## 🔒 Enterprise & Licensing
 
 ### Open Source License
+
 UnQOps source code is distributed under the MIT License.
 
 ### WebContainers Commercial License
+
 Production usage in commercial, for-profit settings requires a [WebContainers API license](https://webcontainers.io/enterprise). Contact us for enterprise licensing options.
 
 ---
@@ -199,6 +208,6 @@ Production usage in commercial, for-profit settings requires a [WebContainers AP
 
 **Built with ❤️ by the Sandeep Gaddam**
 
-[Website](https://unqops.pages.dev) 
+[Website](https://unqops.pages.dev)
 
 </div>

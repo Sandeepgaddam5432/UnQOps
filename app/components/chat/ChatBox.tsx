@@ -3,7 +3,7 @@ import { ClientOnly } from 'remix-utils/client-only';
 import { classNames } from '~/utils/classNames';
 import { PROVIDER_LIST } from '~/utils/constants';
 import { ModelSelector } from '~/components/chat/ModelSelector';
-import { APIKeyManager } from './APIKeyManager';
+import { ApiKeyManager } from './APIKeyManager';
 import { LOCAL_PROVIDERS } from '~/lib/stores/settings';
 import FilePreview from './FilePreview';
 import { ScreenshotStateManager } from './ScreenshotStateManager';
@@ -26,9 +26,9 @@ interface ChatBoxProps {
   provider: any;
   providerList: any[];
   modelList: any[];
-  apiKeys: Record<string, string>;
+  apiKeys: Record<string, boolean>;
   isModelLoading: string | undefined;
-  onApiKeysChange: (providerName: string, apiKey: string) => void;
+  onApiKeysChange: (providerName: string, apiKey: string) => Promise<void>;
   uploadedFiles: File[];
   imageDataList: string[];
   textareaRef: React.RefObject<HTMLTextAreaElement> | undefined;
@@ -114,18 +114,15 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
                 provider={props.provider}
                 setProvider={props.setProvider}
                 providerList={props.providerList || (PROVIDER_LIST as ProviderInfo[])}
-                apiKeys={props.apiKeys}
                 modelLoading={props.isModelLoading}
               />
               {(props.providerList || []).length > 0 &&
                 props.provider &&
                 (!LOCAL_PROVIDERS.includes(props.provider.name) || 'OpenAILike') && (
-                  <APIKeyManager
+                  <ApiKeyManager
                     provider={props.provider}
-                    apiKey={props.apiKeys[props.provider.name] || ''}
-                    setApiKey={(key) => {
-                      props.onApiKeysChange(props.provider.name, key);
-                    }}
+                    isApiKeySet={props.apiKeys[props.provider.name] === true}
+                    setApiKey={(key) => props.onApiKeysChange(props.provider!.name, key)}
                   />
                 )}
             </div>
@@ -236,7 +233,9 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             minHeight: props.TEXTAREA_MIN_HEIGHT,
             maxHeight: props.TEXTAREA_MAX_HEIGHT,
           }}
-          placeholder={props.chatMode === 'build' ? 'How can unqops help you today?' : 'What would you like to discuss?'}
+          placeholder={
+            props.chatMode === 'build' ? 'How can unqops help you today?' : 'What would you like to discuss?'
+          }
           translate="no"
         />
         <ClientOnly>

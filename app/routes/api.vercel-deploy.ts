@@ -1,5 +1,23 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs, json } from '@remix-run/cloudflare';
+import { type ActionFunctionArgs, type LoaderFunctionArgs, json as baseJson } from '@remix-run/cloudflare';
 import type { VercelProjectInfo } from '~/types/vercel';
+import {
+  createDeploymentName,
+  isSameOriginRequest,
+  readJsonBody,
+  RequestBodyTooLargeError,
+  isValidProviderResourceId,
+  isValidProviderToken,
+  sanitizeDeploymentFiles,
+} from '~/lib/api/deployment-security';
+
+function json(data: unknown, init?: ResponseInit): Response {
+  const headers = new Headers(init?.headers);
+  headers.set('Cache-Control', 'private, no-store');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Vary', 'Origin');
+
+  return baseJson(data, { ...init, headers });
+}
 
 // Function to detect framework from project files
 const detectFramework = (files: Record<string, string>): string => {
@@ -117,8 +135,8 @@ const detectFramework = (files: Record<string, string>): string => {
 
       // Default to Node.js if package.json exists
       return 'nodejs';
-    } catch (error) {
-      console.error('Error parsing package.json:', error);
+    } catch {
+      // Fall back to configuration-file detection when package.json is malformed.
     }
   }
 
@@ -172,82 +190,145 @@ const detectFramework = (files: Record<string, string>): string => {
   return 'other';
 };
 
-// Add loader function to handle GET requests
-export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const projectId = url.searchParams.get('projectId');
-  const token = url.searchParams.get('token');
-
-  if (!projectId || !token) {
-    return json({ error: 'Missing projectId or token' }, { status: 400 });
-  }
-
-  try {
-    // Get project info
-    const projectResponse = await fetch(`https://api.vercel.com/v9/projects/${projectId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!projectResponse.ok) {
-      return json({ error: 'Failed to fetch project' }, { status: 400 });
-    }
-
-    const projectData = (await projectResponse.json()) as any;
-
-    // Get latest deployment
-    const deploymentsResponse = await fetch(`https://api.vercel.com/v6/deployments?projectId=${projectId}&limit=1`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!deploymentsResponse.ok) {
-      return json({ error: 'Failed to fetch deployments' }, { status: 400 });
-    }
-
-    const deploymentsData = (await deploymentsResponse.json()) as any;
-
-    const latestDeployment = deploymentsData.deployments?.[0];
-
-    return json({
-      project: {
-        id: projectData.id,
-        name: projectData.name,
-        url: `https://${projectData.name}.vercel.app`,
-      },
-      deploy: latestDeployment
-        ? {
-            id: latestDeployment.id,
-            state: latestDeployment.state,
-            url: latestDeployment.url ? `https://${latestDeployment.url}` : `https://${projectData.name}.vercel.app`,
-          }
-        : null,
-    });
-  } catch (error) {
-    console.error('Error fetching Vercel deployment:', error);
-    return json({ error: 'Failed to fetch deployment' }, { status: 500 });
-  }
+// Tokens must stay in the request body; this route intentionally does not accept them in query strings.
+export async function loader(_args: LoaderFunctionArgs) {
+  return json({ error: 'Use POST to request Vercel deployment data' }, { status: 405, headers: { Allow: 'POST' } });
 }
 
 interface DeployRequestBody {
+  mode?: 'deploy' | 'status';
   projectId?: string;
-  files: Record<string, string>;
+  files?: Record<string, string>;
   sourceFiles?: Record<string, string>;
-  chatId: string;
+  chatId?: string;
   framework?: string;
+  token?: string;
+}
+
+const MAX_DEPLOY_BODY_BYTES = 20_000_000;
+const ALLOWED_FRAMEWORKS = new Set([
+  'nextjs',
+  'remix',
+  'vite',
+  'nuxt',
+  'qwik',
+  'sveltekit',
+  'astro',
+  'angular',
+  'vue',
+  'expo',
+  'react-native',
+  'react',
+  'nodejs',
+  'webpack',
+  'parcel',
+  'rollup',
+  'static',
+  'other',
+]);
+
+async function fetchVercelProjectStatus(projectId: string, token: string): Promise<Response> {
+  const projectResponse = await fetch(`https://api.vercel.com/v9/projects/${encodeURIComponent(projectId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!projectResponse.ok) {
+    return json({ error: 'Failed to fetch project' }, { status: 400 });
+  }
+
+  const projectData = (await projectResponse.json()) as any;
+  const deploymentsResponse = await fetch(
+    `https://api.vercel.com/v6/deployments?projectId=${encodeURIComponent(projectId)}&limit=1`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+
+  if (!deploymentsResponse.ok) {
+    return json({ error: 'Failed to fetch deployments' }, { status: 400 });
+  }
+
+  const deploymentsData = (await deploymentsResponse.json()) as any;
+  const latestDeployment = deploymentsData.deployments?.[0];
+  const projectUrl = `https://${projectData.name}.vercel.app`;
+
+  return json({
+    project: {
+      id: projectData.id,
+      name: projectData.name,
+      url: projectUrl,
+    },
+    deploy: latestDeployment
+      ? {
+          id: latestDeployment.id,
+          state: latestDeployment.state,
+          url: latestDeployment.url ? `https://${latestDeployment.url}` : projectUrl,
+        }
+      : null,
+  });
 }
 
 // Existing action function for POST requests
 export async function action({ request }: ActionFunctionArgs) {
-  try {
-    const { projectId, files, sourceFiles, token, chatId, framework } = (await request.json()) as DeployRequestBody & {
-      token: string;
-    };
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, { status: 405, headers: { Allow: 'POST' } });
+  }
 
-    if (!token) {
+  if (!isSameOriginRequest(request)) {
+    return json({ error: 'Same-origin requests are required' }, { status: 403 });
+  }
+
+  if (request.headers.get('Content-Type')?.split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
+    return json({ error: 'Content-Type must be application/json' }, { status: 415 });
+  }
+
+  let parsedBody: unknown;
+
+  try {
+    parsedBody = await readJsonBody(request, MAX_DEPLOY_BODY_BYTES);
+  } catch (error) {
+    const isTooLarge = error instanceof RequestBodyTooLargeError;
+    return json(
+      { error: isTooLarge ? 'Deployment request is too large' : 'Invalid deployment request body' },
+      { status: isTooLarge ? 413 : 400 },
+    );
+  }
+
+  try {
+    if (typeof parsedBody !== 'object' || parsedBody === null || Array.isArray(parsedBody)) {
+      return json({ error: 'Invalid deployment request' }, { status: 400 });
+    }
+
+    const body = parsedBody as DeployRequestBody;
+    const { mode = 'deploy', projectId, token, chatId, framework } = body;
+
+    if (!isValidProviderToken(token)) {
       return json({ error: 'Not connected to Vercel' }, { status: 401 });
+    }
+
+    if (mode === 'status') {
+      if (!isValidProviderResourceId(projectId)) {
+        return json({ error: 'A valid Vercel project ID is required' }, { status: 400 });
+      }
+
+      return await fetchVercelProjectStatus(projectId, token);
+    }
+
+    if (mode !== 'deploy') {
+      return json({ error: 'Unknown Vercel action' }, { status: 400 });
+    }
+
+    const files = sanitizeDeploymentFiles(body.files);
+    const sourceFiles = body.sourceFiles === undefined ? undefined : sanitizeDeploymentFiles(body.sourceFiles);
+
+    if (
+      !files ||
+      (body.sourceFiles !== undefined && !sourceFiles) ||
+      (projectId !== undefined && !isValidProviderResourceId(projectId)) ||
+      typeof chatId !== 'string' ||
+      chatId.length === 0 ||
+      chatId.length > 128 ||
+      (framework !== undefined && (typeof framework !== 'string' || !ALLOWED_FRAMEWORKS.has(framework)))
+    ) {
+      return json({ error: 'Invalid deployment files or metadata' }, { status: 400 });
     }
 
     let targetProjectId = projectId;
@@ -263,7 +344,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // If no projectId provided, create a new project
     if (!targetProjectId) {
-      const projectName = `unqops-diy-${chatId}-${Date.now()}`;
+      const projectName = createDeploymentName(chatId);
       const createProjectResponse = await fetch('https://api.vercel.com/v9/projects', {
         method: 'POST',
         headers: {
@@ -277,11 +358,7 @@ export async function action({ request }: ActionFunctionArgs) {
       });
 
       if (!createProjectResponse.ok) {
-        const errorData = (await createProjectResponse.json()) as any;
-        return json(
-          { error: `Failed to create project: ${errorData.error?.message || 'Unknown error'}` },
-          { status: 400 },
-        );
+        return json({ error: 'Failed to create project' }, { status: 400 });
       }
 
       const newProject = (await createProjectResponse.json()) as any;
@@ -310,7 +387,7 @@ export async function action({ request }: ActionFunctionArgs) {
         };
       } else {
         // If project doesn't exist, create a new one
-        const projectName = `unqops-diy-${chatId}-${Date.now()}`;
+        const projectName = createDeploymentName(chatId);
         const createProjectResponse = await fetch('https://api.vercel.com/v9/projects', {
           method: 'POST',
           headers: {
@@ -324,11 +401,7 @@ export async function action({ request }: ActionFunctionArgs) {
         });
 
         if (!createProjectResponse.ok) {
-          const errorData = (await createProjectResponse.json()) as any;
-          return json(
-            { error: `Failed to create project: ${errorData.error?.message || 'Unknown error'}` },
-            { status: 400 },
-          );
+          return json({ error: 'Failed to create project' }, { status: 400 });
         }
 
         const newProject = (await createProjectResponse.json()) as any;
@@ -424,11 +497,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
 
     if (!deployResponse.ok) {
-      const errorData = (await deployResponse.json()) as any;
-      return json(
-        { error: `Failed to create deployment: ${errorData.error?.message || 'Unknown error'}` },
-        { status: 400 },
-      );
+      return json({ error: 'Failed to create deployment' }, { status: 400 });
     }
 
     const deployData = (await deployResponse.json()) as any;
@@ -479,8 +548,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
       project: projectInfo,
     });
-  } catch (error) {
-    console.error('Vercel deploy error:', error);
+  } catch {
     return json({ error: 'Deployment failed' }, { status: 500 });
   }
 }

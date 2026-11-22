@@ -1,39 +1,72 @@
 import { type ActionFunctionArgs } from '@remix-run/cloudflare';
 import { streamText } from '~/lib/.server/llm/stream-text';
 import { stripIndents } from '~/utils/stripIndent';
-import type { ProviderInfo } from '~/types/model';
 import { getApiKeysFromCookie, getProviderSettingsFromCookie } from '~/lib/api/cookies';
+import { PROVIDER_LIST } from '~/utils/constants';
 import { createScopedLogger } from '~/utils/logger';
+import { isSameOriginRequest, readJsonBody, RequestBodyTooLargeError } from '~/lib/api/deployment-security';
 
-export async function action(args: ActionFunctionArgs) {
-  return enhancerAction(args);
-}
-
+const MAX_REQUEST_BYTES = 1_000_000;
 const logger = createScopedLogger('api.enhancher');
 
-async function enhancerAction({ context, request }: ActionFunctionArgs) {
-  const { message, model, provider } = await request.json<{
-    message: string;
-    model: string;
-    provider: ProviderInfo;
-    apiKeys?: Record<string, string>;
-  }>();
+function errorResponse(message: string, status: number): Response {
+  return new Response(message, {
+    status,
+    headers: {
+      'Cache-Control': 'private, no-store',
+      'Content-Type': 'text/plain; charset=utf-8',
+      'X-Content-Type-Options': 'nosniff',
+      Vary: 'Cookie, Origin',
+    },
+  });
+}
 
-  const { name: providerName } = provider;
-
-  // validate 'model' and 'provider' fields
-  if (!model || typeof model !== 'string') {
-    throw new Response('Invalid or missing model', {
-      status: 400,
-      statusText: 'Bad Request',
-    });
+export async function action({ context, request }: ActionFunctionArgs) {
+  if (request.method !== 'POST') {
+    return errorResponse('Method not allowed', 405);
   }
 
-  if (!providerName || typeof providerName !== 'string') {
-    throw new Response('Invalid or missing provider', {
-      status: 400,
-      statusText: 'Bad Request',
-    });
+  if (!isSameOriginRequest(request)) {
+    return errorResponse('Same-origin requests are required', 403);
+  }
+
+  if (request.headers.get('Content-Type')?.split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
+    return errorResponse('Content-Type must be application/json', 415);
+  }
+
+  let body: unknown;
+
+  try {
+    body = await readJsonBody(request, MAX_REQUEST_BYTES);
+  } catch (error) {
+    return errorResponse(
+      error instanceof RequestBodyTooLargeError ? 'Request is too large' : 'Invalid request body',
+      error instanceof RequestBodyTooLargeError ? 413 : 400,
+    );
+  }
+
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return errorResponse('Invalid request body', 400);
+  }
+
+  const { message, model, provider } = body as { message?: unknown; model?: unknown; provider?: unknown };
+  const providerName =
+    typeof provider === 'object' && provider !== null && !Array.isArray(provider) && 'name' in provider
+      ? provider.name
+      : undefined;
+
+  if (
+    typeof message !== 'string' ||
+    message.length === 0 ||
+    typeof model !== 'string' ||
+    model.length === 0 ||
+    model.length > 256 ||
+    typeof providerName !== 'string' ||
+    providerName.length === 0 ||
+    providerName.length > 80 ||
+    !PROVIDER_LIST.some((item) => item.name === providerName)
+  ) {
+    return errorResponse('Invalid or missing provider request fields', 400);
   }
 
   const cookieHeader = request.headers.get('Cookie');
@@ -83,55 +116,38 @@ async function enhancerAction({ context, request }: ActionFunctionArgs) {
       options: {
         system:
           'You are a senior software principal architect, you should help the user analyse the user query and enrich it with the necessary context and constraints to make it more specific, actionable, and effective. You should also ensure that the prompt is self-contained and uses professional language. Your response should ONLY contain the enhanced prompt text. Do not include any explanations, metadata, or wrapper tags.',
-
-        /*
-         * onError: (event) => {
-         *   throw new Response(null, {
-         *     status: 500,
-         *     statusText: 'Internal Server Error',
-         *   });
-         * }
-         */
       },
     });
 
-    // Handle streaming errors in a non-blocking way
-    (async () => {
+    void (async () => {
       try {
         for await (const part of result.fullStream) {
           if (part.type === 'error') {
-            const error: any = part.error;
-            logger.error('Streaming error:', error);
+            logger.error('Prompt enhancement provider stream failed');
             break;
           }
         }
-      } catch (error) {
-        logger.error('Error processing stream:', error);
+      } catch {
+        logger.error('Prompt enhancement stream processing failed');
       }
     })();
 
-    // Return the text stream directly since it's already text data
     return new Response(result.textStream, {
       status: 200,
       headers: {
+        'Cache-Control': 'private, no-store',
         'Content-Type': 'text/event-stream',
         Connection: 'keep-alive',
-        'Cache-Control': 'no-cache',
+        Vary: 'Cookie, Origin',
       },
     });
   } catch (error: unknown) {
-    console.log(error);
+    const invalidApiKey = error instanceof Error && error.message.includes('API key');
+    logger.error('Prompt enhancement request failed');
 
-    if (error instanceof Error && error.message?.includes('API key')) {
-      throw new Response('Invalid or missing API key', {
-        status: 401,
-        statusText: 'Unauthorized',
-      });
-    }
-
-    throw new Response(null, {
-      status: 500,
-      statusText: 'Internal Server Error',
-    });
+    return errorResponse(
+      invalidApiKey ? 'Invalid or missing API key' : 'Prompt enhancement failed',
+      invalidApiKey ? 401 : 502,
+    );
   }
 }

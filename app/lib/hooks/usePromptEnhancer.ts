@@ -18,67 +18,53 @@ export function usePromptEnhancer() {
     setInput: (value: string) => void,
     model: string,
     provider: ProviderInfo,
-    apiKeys?: Record<string, string>,
   ) => {
     setEnhancingPrompt(true);
     setPromptEnhanced(false);
 
-    const requestBody: any = {
+    const originalInput = input;
+    const requestBody = {
       message: input,
       model,
       provider,
     };
 
-    if (apiKeys) {
-      requestBody.apiKeys = apiKeys;
-    }
+    try {
+      const response = await fetch('/api/enhancer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
 
-    const response = await fetch('/api/enhancer', {
-      method: 'POST',
-      body: JSON.stringify(requestBody),
-    });
-
-    const reader = response.body?.getReader();
-
-    const originalInput = input;
-
-    if (reader) {
-      const decoder = new TextDecoder();
-
-      let _input = '';
-      let _error;
-
-      try {
-        setInput('');
-
-        while (true) {
-          const { value, done } = await reader.read();
-
-          if (done) {
-            break;
-          }
-
-          _input += decoder.decode(value);
-
-          logger.trace('Set input', _input);
-
-          setInput(_input);
-        }
-      } catch (error) {
-        _error = error;
-        setInput(originalInput);
-      } finally {
-        if (_error) {
-          logger.error(_error);
-        }
-
-        setEnhancingPrompt(false);
-        setPromptEnhanced(true);
-
-        setTimeout(() => {
-          setInput(_input);
-        });
+      if (!response.ok || !response.body) {
+        throw new Error('Prompt enhancement failed');
       }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let enhancedInput = '';
+
+      setInput('');
+
+      while (true) {
+        const { value, done } = await reader.read();
+
+        if (done) {
+          enhancedInput += decoder.decode();
+          break;
+        }
+
+        enhancedInput += decoder.decode(value, { stream: true });
+        setInput(enhancedInput);
+      }
+
+      setInput(enhancedInput);
+      setPromptEnhanced(true);
+    } catch {
+      setInput(originalInput);
+      logger.error('Prompt enhancement request failed');
+    } finally {
+      setEnhancingPrompt(false);
     }
   };
 

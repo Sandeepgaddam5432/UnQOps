@@ -1,44 +1,31 @@
-import type { LoaderFunction } from '@remix-run/cloudflare';
-import { LLMManager } from '~/lib/modules/llm/manager';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { getApiKeysFromCookie } from '~/lib/api/cookies';
+import { isSameOriginRequest } from '~/lib/api/deployment-security';
 
-export const loader: LoaderFunction = async ({ context, request }) => {
-  // Get API keys from cookie
-  const cookieHeader = request.headers.get('Cookie');
-  const apiKeysFromCookie = getApiKeysFromCookie(cookieHeader);
+function errorResponse(message: string, status: number): Response {
+  return Response.json(
+    { error: message },
+    { status, headers: { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } },
+  );
+}
 
-  // Initialize the LLM manager to access environment variables
-  const llmManager = LLMManager.getInstance(context?.cloudflare?.env as any);
-
-  // Get all provider instances to find their API token keys
-  const providers = llmManager.getAllProviders();
-
-  // Create a comprehensive API keys object
-  const apiKeys: Record<string, string> = { ...apiKeysFromCookie };
-
-  // For each provider, check all possible sources for API keys
-  for (const provider of providers) {
-    if (!provider.config.apiTokenKey) {
-      continue;
-    }
-
-    const envVarName = provider.config.apiTokenKey;
-
-    // Skip if we already have this provider's key from cookies
-    if (apiKeys[provider.name]) {
-      continue;
-    }
-
-    // Check environment variables in order of precedence
-    const envValue =
-      (context?.cloudflare?.env as Record<string, any>)?.[envVarName] ||
-      process.env[envVarName] ||
-      llmManager.env[envVarName];
-
-    if (envValue) {
-      apiKeys[provider.name] = envValue;
-    }
+/** Explicit user-requested export only; normal API routes never return provider keys. */
+export async function action({ request }: ActionFunctionArgs): Promise<Response> {
+  if (request.method !== 'POST') {
+    return errorResponse('Method not allowed', 405);
   }
 
-  return Response.json(apiKeys);
-};
+  if (!isSameOriginRequest(request)) {
+    return errorResponse('Same-origin export is required', 403);
+  }
+
+  const apiKeys = getApiKeysFromCookie(request.headers.get('Cookie'));
+
+  return Response.json(apiKeys, {
+    headers: {
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+      Vary: 'Cookie, Origin',
+    },
+  });
+}

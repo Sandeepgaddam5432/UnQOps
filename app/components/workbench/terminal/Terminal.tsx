@@ -1,8 +1,10 @@
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Terminal as XTerm } from '@xterm/xterm';
+import { useStore } from '@nanostores/react';
 import { forwardRef, memo, useEffect, useImperativeHandle, useRef } from 'react';
-import type { Theme } from '~/lib/stores/theme';
+import { themePreferencesStore, type Theme } from '~/lib/stores/theme';
+import { getThemeFontCss } from '~/lib/theme/fonts';
 import { createScopedLogger } from '~/utils/logger';
 import { getTerminalTheme } from './theme';
 
@@ -25,6 +27,7 @@ export interface TerminalProps {
 export const Terminal = memo(
   forwardRef<TerminalRef, TerminalProps>(
     ({ className, theme, readonly, id, onTerminalReady, onTerminalResize }, ref) => {
+      const monoFont = useStore(themePreferencesStore).fonts.mono;
       const terminalElementRef = useRef<HTMLDivElement>(null);
       const terminalRef = useRef<XTerm>();
 
@@ -40,7 +43,7 @@ export const Terminal = memo(
           disableStdin: readonly,
           theme: getTerminalTheme(readonly ? { cursor: '#00000000' } : {}),
           fontSize: 12,
-          fontFamily: 'Menlo, courier-new, courier, monospace',
+          fontFamily: getThemeFontCss(themePreferencesStore.get().fonts.mono),
         });
 
         terminalRef.current = terminal;
@@ -71,9 +74,9 @@ export const Terminal = memo(
 
         // we render a transparent cursor in case the terminal is readonly
         terminal.options.theme = getTerminalTheme(readonly ? { cursor: '#00000000' } : {});
-
         terminal.options.disableStdin = readonly;
-      }, [theme, readonly]);
+        terminal.options.fontFamily = getThemeFontCss(monoFont);
+      }, [theme, readonly, monoFont]);
 
       useImperativeHandle(ref, () => {
         return {

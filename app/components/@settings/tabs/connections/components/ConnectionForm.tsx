@@ -78,7 +78,7 @@ export function ConnectionForm({ authState, setAuthState, onSave, onDisconnect }
                 Personal Access Token
               </label>
               <a
-                href="https://github.com/settings/tokens/new?scopes=repo,user,read:org,workflow,delete_repo,write:packages,read:packages"
+                href="https://github.com/settings/personal-access-tokens/new"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={classNames(

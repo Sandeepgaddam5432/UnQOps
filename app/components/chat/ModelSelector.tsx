@@ -11,7 +11,6 @@ interface ModelSelectorProps {
   setProvider?: (provider: ProviderInfo) => void;
   modelList: ModelInfo[];
   providerList: ProviderInfo[];
-  apiKeys: Record<string, string>;
   modelLoading?: string;
 }
 

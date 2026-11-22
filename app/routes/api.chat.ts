@@ -12,7 +12,38 @@ import { WORK_DIR } from '~/utils/constants';
 import { createSummary } from '~/lib/.server/llm/create-summary';
 import { extractPropertiesFromMessage } from '~/lib/.server/llm/utils';
 import type { DesignScheme } from '~/types/design-scheme';
+import { getApiKeysFromCookie, getProviderSettingsFromCookie } from '~/lib/api/cookies';
+import { isSameOriginRequest, readJsonBody, RequestBodyTooLargeError } from '~/lib/api/deployment-security';
+import { createMcpSessionCookie, getMcpSessionId } from '~/lib/api/mcp-security';
 import { MCPService } from '~/lib/services/mcpService';
+
+const MAX_CHAT_BODY_BYTES = 20_000_000;
+
+interface ChatRequestBody {
+  messages?: unknown;
+  files?: unknown;
+  promptId?: unknown;
+  contextOptimization?: unknown;
+  supabase?: unknown;
+  chatMode?: unknown;
+  designScheme?: unknown;
+  maxLLMSteps?: unknown;
+}
+
+function errorResponse(message: string, status: number): Response {
+  return Response.json(
+    { error: true, message, statusCode: status, isRetryable: status >= 500 },
+    {
+      status,
+      headers: {
+        'Cache-Control': 'private, no-store',
+        'Content-Type': 'application/json',
+        'X-Content-Type-Options': 'nosniff',
+        Vary: 'Cookie, Origin',
+      },
+    },
+  );
+}
 
 export async function action(args: ActionFunctionArgs) {
   return chatAction(args);
@@ -20,49 +51,82 @@ export async function action(args: ActionFunctionArgs) {
 
 const logger = createScopedLogger('api.chat');
 
-function parseCookies(cookieHeader: string): Record<string, string> {
-  const cookies: Record<string, string> = {};
-
-  const items = cookieHeader.split(';').map((cookie) => cookie.trim());
-
-  items.forEach((item) => {
-    const [name, ...rest] = item.split('=');
-
-    if (name && rest) {
-      const decodedName = decodeURIComponent(name.trim());
-      const decodedValue = decodeURIComponent(rest.join('=').trim());
-      cookies[decodedName] = decodedValue;
-    }
-  });
-
-  return cookies;
-}
-
 async function chatAction({ context, request }: ActionFunctionArgs) {
-  const { messages, files, promptId, contextOptimization, supabase, chatMode, designScheme, maxLLMSteps } =
-    await request.json<{
-      messages: Messages;
-      files: any;
-      promptId?: string;
-      contextOptimization: boolean;
-      chatMode: 'discuss' | 'build';
-      designScheme?: DesignScheme;
-      supabase?: {
-        isConnected: boolean;
-        hasSelectedProject: boolean;
-        credentials?: {
-          anonKey?: string;
-          supabaseUrl?: string;
-        };
-      };
-      maxLLMSteps: number;
-    }>();
+  if (request.method !== 'POST') {
+    return errorResponse('Method not allowed', 405);
+  }
+
+  if (!isSameOriginRequest(request)) {
+    return errorResponse('Same-origin requests are required', 403);
+  }
+
+  if (request.headers.get('Content-Type')?.split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
+    return errorResponse('Content-Type must be application/json', 415);
+  }
+
+  let body: ChatRequestBody;
+
+  try {
+    const parsedBody = await readJsonBody(request, MAX_CHAT_BODY_BYTES);
+
+    if (typeof parsedBody !== 'object' || parsedBody === null || Array.isArray(parsedBody)) {
+      return errorResponse('Invalid request body', 400);
+    }
+
+    body = parsedBody as ChatRequestBody;
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return errorResponse('Chat request is too large', 413);
+    }
+
+    return errorResponse('Invalid request body', 400);
+  }
+
+  if (
+    !Array.isArray(body.messages) ||
+    body.messages.length === 0 ||
+    body.messages.length > 500 ||
+    !body.messages.every(
+      (message) =>
+        typeof message === 'object' &&
+        message !== null &&
+        'role' in message &&
+        ['user', 'assistant', 'system', 'tool'].includes(String(message.role)),
+    ) ||
+    (body.files !== undefined &&
+      (typeof body.files !== 'object' || body.files === null || Array.isArray(body.files))) ||
+    (body.contextOptimization !== undefined && typeof body.contextOptimization !== 'boolean') ||
+    (body.chatMode !== 'discuss' && body.chatMode !== 'build') ||
+    (body.promptId !== undefined && (typeof body.promptId !== 'string' || body.promptId.length > 128)) ||
+    (body.supabase !== undefined &&
+      body.supabase !== null &&
+      (typeof body.supabase !== 'object' || Array.isArray(body.supabase))) ||
+    (body.designScheme !== undefined &&
+      body.designScheme !== null &&
+      (typeof body.designScheme !== 'object' || Array.isArray(body.designScheme)))
+  ) {
+    return errorResponse('Invalid chat request fields', 400);
+  }
+
+  const messages = body.messages as Messages;
+  const files = (body.files ?? {}) as any;
+  const promptId = body.promptId as string | undefined;
+  const contextOptimization = body.contextOptimization === true;
+  const supabase = body.supabase as any;
+  const chatMode = body.chatMode as 'discuss' | 'build';
+  const designScheme = body.designScheme as DesignScheme | undefined;
+  const maxLLMSteps =
+    typeof body.maxLLMSteps === 'number' &&
+    Number.isInteger(body.maxLLMSteps) &&
+    body.maxLLMSteps >= 1 &&
+    body.maxLLMSteps <= 20
+      ? body.maxLLMSteps
+      : 5;
 
   const cookieHeader = request.headers.get('Cookie');
-  const apiKeys = JSON.parse(parseCookies(cookieHeader || '').apiKeys || '{}');
-  const providerSettings: Record<string, IProviderSetting> = JSON.parse(
-    parseCookies(cookieHeader || '').providers || '{}',
-  );
+  const mcpSessionId = getMcpSessionId(request);
+  const apiKeys = getApiKeysFromCookie(cookieHeader);
+  const providerSettings = getProviderSettingsFromCookie(cookieHeader) as Record<string, IProviderSetting>;
 
   const stream = new SwitchableStream();
 
@@ -75,7 +139,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
   let progressCounter: number = 1;
 
   try {
-    const mcpService = MCPService.getInstance();
+    const mcpService = MCPService.getInstance(mcpSessionId ?? 'default');
     const totalMessageContent = messages.reduce((acc, message) => acc + message.content, '');
     logger.debug(`Total message length: ${totalMessageContent.split(' ').length}, words`);
 
@@ -276,8 +340,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
             (async () => {
               for await (const part of result.fullStream) {
                 if (part.type === 'error') {
-                  const error: any = part.error;
-                  logger.error(`${error}`);
+                  logger.error('Chat continuation provider stream failed');
 
                   return;
                 }
@@ -315,8 +378,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
         (async () => {
           for await (const part of result.fullStream) {
             if (part.type === 'error') {
-              const error: any = part.error;
-              logger.error(`${error}`);
+              logger.error('Chat provider stream failed');
 
               return;
             }
@@ -324,7 +386,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
         })();
         result.mergeIntoDataStream(dataStream);
       },
-      onError: (error: any) => `Custom error: ${error.message}`,
+      onError: () => 'The chat request failed',
     }).pipeThrough(
       new TransformStream({
         transform: (chunk, controller) => {
@@ -368,41 +430,20 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
       headers: {
         'Content-Type': 'text/event-stream; charset=utf-8',
         Connection: 'keep-alive',
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+        Vary: 'Cookie, Origin',
+        ...(mcpSessionId ? { 'Set-Cookie': createMcpSessionCookie(request, mcpSessionId) } : {}),
         'Text-Encoding': 'chunked',
       },
     });
-  } catch (error: any) {
-    logger.error(error);
+  } catch (error: unknown) {
+    const invalidApiKey = error instanceof Error && error.message.includes('API key');
+    logger.error('Chat request failed');
 
-    const errorResponse = {
-      error: true,
-      message: error.message || 'An unexpected error occurred',
-      statusCode: error.statusCode || 500,
-      isRetryable: error.isRetryable !== false, // Default to retryable unless explicitly false
-      provider: error.provider || 'unknown',
-    };
-
-    if (error.message?.includes('API key')) {
-      return new Response(
-        JSON.stringify({
-          ...errorResponse,
-          message: 'Invalid or missing API key',
-          statusCode: 401,
-          isRetryable: false,
-        }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-          statusText: 'Unauthorized',
-        },
-      );
-    }
-
-    return new Response(JSON.stringify(errorResponse), {
-      status: errorResponse.statusCode,
-      headers: { 'Content-Type': 'application/json' },
-      statusText: 'Error',
-    });
+    return errorResponse(
+      invalidApiKey ? 'Invalid or missing API key' : 'Chat request failed',
+      invalidApiKey ? 401 : 502,
+    );
   }
 }

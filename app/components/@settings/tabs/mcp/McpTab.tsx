@@ -7,21 +7,9 @@ import McpServerList from '~/components/@settings/tabs/mcp/McpServerList';
 
 const EXAMPLE_MCP_CONFIG: MCPConfig = {
   mcpServers: {
-    everything: {
-      type: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-everything'],
-    },
     deepwiki: {
       type: 'streamable-http',
       url: 'https://mcp.deepwiki.com/mcp',
-    },
-    'local-sse': {
-      type: 'sse',
-      url: 'http://localhost:8000/sse',
-      headers: {
-        Authorization: 'Bearer mytoken123',
-      },
     },
   },
 };
@@ -120,6 +108,7 @@ export default function McpTab() {
   };
 
   const serverEntries = useMemo(() => Object.entries(serverTools), [serverTools]);
+  const hasRestoredServerConfig = serverEntries.length > 0 && Object.keys(settings.mcpConfig.mcpServers).length === 0;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -158,6 +147,11 @@ export default function McpTab() {
         <h2 className="text-base font-medium text-unqops-elements-textPrimary mb-3">Configuration</h2>
 
         <div className="space-y-4">
+          <p className="rounded-lg border border-unqops-elements-borderColor bg-unqops-elements-background-depth-2 p-3 text-sm text-unqops-elements-textSecondary">
+            {hasRestoredServerConfig
+              ? 'The active server status was restored, but the full configuration and credentials are never read back to this browser. Paste the complete configuration below before saving edits; saving replaces the active configuration.'
+              : 'The full configuration is kept in memory only and is not saved in browser storage. Re-enter it after reloading the page.'}
+          </p>
           <div>
             <label htmlFor="mcp-config" className="block text-sm text-unqops-elements-textSecondary mb-2">
               Configuration JSON
@@ -193,7 +187,8 @@ export default function McpTab() {
             />
           </div>
           <div className="mt-2 text-sm text-unqops-elements-textSecondary">
-            The MCP configuration format is identical to the one used in Claude Desktop.
+            The MCP configuration format is similar to Claude Desktop. Hosted instances require HTTPS endpoints; local
+            servers and stdio processes are only available in local development.
             <a
               href="https://modelcontextprotocol.io/examples"
               target="_blank"

@@ -17,8 +17,8 @@ export function SupabaseChatAlert({ alert, clearAlert, postMessage }: Props) {
   const [isExecuting, setIsExecuting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(true);
 
-  // Determine connection state
-  const isConnected = !!(connection.token && connection.selectedProjectId);
+  // The connection flag is restored from the HttpOnly credential session; token input is never persisted.
+  const isConnected = !!(connection.isConnected && connection.selectedProjectId);
 
   // Set title and description based on connection state
   const title = isConnected ? 'Supabase Query' : 'Supabase Connection Required';
@@ -36,8 +36,7 @@ export function SupabaseChatAlert({ alert, clearAlert, postMessage }: Props) {
   const showConnectButton = !isConnected;
 
   const executeSupabaseAction = async (sql: string) => {
-    if (!connection.token || !connection.selectedProjectId) {
-      console.error('No Supabase token or project selected');
+    if (!connection.isConnected || !connection.selectedProjectId) {
       return;
     }
 
@@ -48,7 +47,6 @@ export function SupabaseChatAlert({ alert, clearAlert, postMessage }: Props) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${connection.token}`,
         },
         body: JSON.stringify({
           projectId: connection.selectedProjectId,
@@ -61,8 +59,7 @@ export function SupabaseChatAlert({ alert, clearAlert, postMessage }: Props) {
         throw new Error(`Supabase query failed: ${errorData.error?.message || response.statusText}`);
       }
 
-      const result = await response.json();
-      console.log('Supabase query executed successfully:', result);
+      await response.json();
       clearAlert();
     } catch (error) {
       console.error('Failed to execute Supabase action:', error);

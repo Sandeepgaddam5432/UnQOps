@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Button } from '~/components/ui/Button';
 import { Badge } from '~/components/ui/Badge';
@@ -6,583 +6,273 @@ import { classNames } from '~/utils/classNames';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '~/components/ui/Collapsible';
 import { CodeBracketIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
-// Helper function to safely parse JSON
-const safeJsonParse = (item: string | null) => {
-  if (!item) {
-    return null;
-  }
+const PROVIDERS = ['github', 'netlify', 'vercel', 'supabase', 'cloudflare'] as const;
+type Provider = (typeof PROVIDERS)[number];
+type ProviderStatus = Record<Provider, boolean>;
 
-  try {
-    return JSON.parse(item);
-  } catch (e) {
-    console.error('Failed to parse JSON from localStorage:', e);
-    return null;
-  }
+const PROVIDER_LABELS: Record<Provider, string> = {
+  github: 'GitHub',
+  netlify: 'Netlify',
+  vercel: 'Vercel',
+  supabase: 'Supabase',
+  cloudflare: 'Cloudflare',
 };
 
-/**
- * A diagnostics component to help troubleshoot connection issues
- */
+const PROVIDER_ICONS: Record<Provider, string> = {
+  github: 'i-ph:github-logo',
+  netlify: 'i-unqops:netlify',
+  vercel: 'i-ph:triangle',
+  supabase: 'i-ph:database',
+  cloudflare: 'i-ph:cloud',
+};
+
+const LEGACY_STORAGE_KEYS: Record<Provider, string[]> = {
+  github: ['github_connection'],
+  netlify: ['netlify_connection'],
+  vercel: ['vercel_connection'],
+  supabase: ['supabase_connection', 'supabaseCredentials'],
+  cloudflare: ['cloudflare_connection'],
+};
+
+interface DiagnosticResults {
+  timestamp: string;
+  providers: ProviderStatus;
+  checks: ProviderStatus;
+  serverDiagnostics: unknown;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readProviderStatus(value: unknown): ProviderStatus {
+  const record = isRecord(value) ? value : {};
+
+  return Object.fromEntries(PROVIDERS.map((provider) => [provider, record[provider] === true])) as ProviderStatus;
+}
+
+function safeReachability(value: unknown): { isReachable: boolean; status?: number } | undefined {
+  if (!isRecord(value) || typeof value.isReachable !== 'boolean') {
+    return undefined;
+  }
+
+  return {
+    isReachable: value.isReachable,
+    ...(typeof value.status === 'number' && Number.isInteger(value.status) ? { status: value.status } : {}),
+  };
+}
+
+function sanitizeServerDiagnostics(value: unknown) {
+  if (!isRecord(value)) {
+    return { status: 'unavailable' };
+  }
+
+  const externalApis = isRecord(value.externalApis) ? value.externalApis : {};
+  const github = safeReachability(externalApis.github);
+  const netlify = safeReachability(externalApis.netlify);
+
+  return {
+    status: typeof value.status === 'string' ? value.status.slice(0, 32) : 'unknown',
+    serverTimestamp: typeof value.serverTimestamp === 'string' ? value.serverTimestamp.slice(0, 64) : undefined,
+    externalApis: {
+      ...(github ? { github } : {}),
+      ...(netlify ? { netlify } : {}),
+    },
+  };
+}
+
+/** Connection diagnostics only reports server-side credential presence and verification status. */
 export default function ConnectionDiagnostics() {
-  const [diagnosticResults, setDiagnosticResults] = useState<any>(null);
+  const [diagnosticResults, setDiagnosticResults] = useState<DiagnosticResults | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [resettingProvider, setResettingProvider] = useState<Provider | null>(null);
 
-  // Run diagnostics when requested
   const runDiagnostics = async () => {
+    setIsRunning(true);
+    setDiagnosticResults(null);
+
     try {
-      setIsRunning(true);
-      setDiagnosticResults(null);
+      const [credentialsResponse, serverResponse] = await Promise.all([
+        fetch('/api/credentials?verify=1', { cache: 'no-store' }),
+        fetch('/api/system/diagnostics', { cache: 'no-store' }).catch(() => null),
+      ]);
 
-      // Check browser-side storage
-      const localStorageChecks = {
-        githubConnection: localStorage.getItem('github_connection'),
-        netlifyConnection: localStorage.getItem('netlify_connection'),
-        vercelConnection: localStorage.getItem('vercel_connection'),
-        supabaseConnection: localStorage.getItem('supabase_connection'),
-      };
-
-      // Get diagnostic data from server
-      const response = await fetch('/api/system/diagnostics');
-
-      if (!response.ok) {
-        throw new Error(`Diagnostics API error: ${response.status}`);
+      if (!credentialsResponse.ok) {
+        throw new Error('Secure credential status is unavailable');
       }
 
-      const serverDiagnostics = await response.json();
-
-      // === GitHub Checks ===
-      const githubConnectionParsed = safeJsonParse(localStorageChecks.githubConnection);
-      const githubToken = githubConnectionParsed?.token;
-      const githubAuthHeaders = {
-        ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
-        'Content-Type': 'application/json',
-      };
-      console.log('Testing GitHub endpoints with token:', githubToken ? 'present' : 'missing');
-
-      const githubEndpoints = [
-        { name: 'User', url: '/api/system/git-info?action=getUser' },
-        { name: 'Repos', url: '/api/system/git-info?action=getRepos' },
-        { name: 'Default', url: '/api/system/git-info' },
-      ];
-      const githubResults = await Promise.all(
-        githubEndpoints.map(async (endpoint) => {
-          try {
-            const resp = await fetch(endpoint.url, { headers: githubAuthHeaders });
-            return { endpoint: endpoint.name, status: resp.status, ok: resp.ok };
-          } catch (error) {
-            return {
-              endpoint: endpoint.name,
-              error: error instanceof Error ? error.message : String(error),
-              ok: false,
-            };
-          }
-        }),
-      );
-
-      // === Netlify Checks ===
-      const netlifyConnectionParsed = safeJsonParse(localStorageChecks.netlifyConnection);
-      const netlifyToken = netlifyConnectionParsed?.token;
-      let netlifyUserCheck = null;
-
-      if (netlifyToken) {
-        try {
-          const netlifyResp = await fetch('https://api.netlify.com/api/v1/user', {
-            headers: { Authorization: `Bearer ${netlifyToken}` },
-          });
-          netlifyUserCheck = { status: netlifyResp.status, ok: netlifyResp.ok };
-        } catch (error) {
-          netlifyUserCheck = {
-            error: error instanceof Error ? error.message : String(error),
-            ok: false,
-          };
-        }
-      }
-
-      // === Vercel Checks ===
-      const vercelConnectionParsed = safeJsonParse(localStorageChecks.vercelConnection);
-      const vercelToken = vercelConnectionParsed?.token;
-      let vercelUserCheck = null;
-
-      if (vercelToken) {
-        try {
-          const vercelResp = await fetch('https://api.vercel.com/v2/user', {
-            headers: { Authorization: `Bearer ${vercelToken}` },
-          });
-          vercelUserCheck = { status: vercelResp.status, ok: vercelResp.ok };
-        } catch (error) {
-          vercelUserCheck = {
-            error: error instanceof Error ? error.message : String(error),
-            ok: false,
-          };
-        }
-      }
-
-      // === Supabase Checks ===
-      const supabaseConnectionParsed = safeJsonParse(localStorageChecks.supabaseConnection);
-      const supabaseUrl = supabaseConnectionParsed?.projectUrl;
-      const supabaseAnonKey = supabaseConnectionParsed?.anonKey;
-      let supabaseCheck = null;
-
-      if (supabaseUrl && supabaseAnonKey) {
-        supabaseCheck = { ok: true, status: 200, message: 'URL and Key present in localStorage' };
-      } else {
-        supabaseCheck = { ok: false, message: 'URL or Key missing in localStorage' };
-      }
-
-      // Compile results
-      const results = {
+      const credentialsData: unknown = await credentialsResponse.json();
+      const serverData: unknown = serverResponse?.ok ? await serverResponse.json().catch(() => null) : null;
+      const credentials = isRecord(credentialsData) ? credentialsData : {};
+      const results: DiagnosticResults = {
         timestamp: new Date().toISOString(),
-        localStorage: {
-          hasGithubConnection: Boolean(localStorageChecks.githubConnection),
-          hasNetlifyConnection: Boolean(localStorageChecks.netlifyConnection),
-          hasVercelConnection: Boolean(localStorageChecks.vercelConnection),
-          hasSupabaseConnection: Boolean(localStorageChecks.supabaseConnection),
-          githubConnectionParsed,
-          netlifyConnectionParsed,
-          vercelConnectionParsed,
-          supabaseConnectionParsed,
-        },
-        apiEndpoints: {
-          github: githubResults,
-          netlify: netlifyUserCheck,
-          vercel: vercelUserCheck,
-          supabase: supabaseCheck,
-        },
-        serverDiagnostics,
+        providers: readProviderStatus(credentials.providers),
+        checks: readProviderStatus(credentials.checks),
+        serverDiagnostics: sanitizeServerDiagnostics(serverData),
       };
 
       setDiagnosticResults(results);
 
-      // Display simple results
-      if (results.localStorage.hasGithubConnection && results.apiEndpoints.github.some((r: { ok: boolean }) => !r.ok)) {
-        toast.error('GitHub API connections are failing. Try reconnecting.');
-      }
+      const connectedProviders = PROVIDERS.filter((provider) => results.providers[provider]);
+      const failedProviders = connectedProviders.filter((provider) => !results.checks[provider]);
 
-      if (results.localStorage.hasNetlifyConnection && netlifyUserCheck && !netlifyUserCheck.ok) {
-        toast.error('Netlify API connection is failing. Try reconnecting.');
-      }
-
-      if (results.localStorage.hasVercelConnection && vercelUserCheck && !vercelUserCheck.ok) {
-        toast.error('Vercel API connection is failing. Try reconnecting.');
-      }
-
-      if (results.localStorage.hasSupabaseConnection && supabaseCheck && !supabaseCheck.ok) {
-        toast.warning('Supabase connection check failed or missing details. Verify settings.');
-      }
-
-      if (
-        !results.localStorage.hasGithubConnection &&
-        !results.localStorage.hasNetlifyConnection &&
-        !results.localStorage.hasVercelConnection &&
-        !results.localStorage.hasSupabaseConnection
-      ) {
-        toast.info('No connection data found in browser storage.');
+      if (connectedProviders.length === 0) {
+        toast.info('No encrypted provider sessions were found. Legacy browser storage is not inspected.');
+      } else if (failedProviders.length > 0) {
+        toast.warning(
+          `Provider verification failed for: ${failedProviders.map((provider) => PROVIDER_LABELS[provider]).join(', ')}`,
+        );
+      } else {
+        toast.success('All connected provider sessions passed verification.');
       }
     } catch (error) {
-      console.error('Diagnostics error:', error);
-      toast.error('Error running diagnostics');
-      setDiagnosticResults({ error: error instanceof Error ? error.message : String(error) });
+      setDiagnosticResults(null);
+      toast.error(error instanceof Error ? error.message : 'Error running diagnostics');
     } finally {
       setIsRunning(false);
     }
   };
 
-  // Helper to reset GitHub connection
-  const resetGitHubConnection = () => {
-    try {
-      localStorage.removeItem('github_connection');
-      document.cookie = 'githubToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'githubUsername=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'git:github.com=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      toast.success('GitHub connection data cleared. Please refresh the page and reconnect.');
-      setDiagnosticResults(null);
-    } catch (error) {
-      console.error('Error clearing GitHub data:', error);
-      toast.error('Failed to clear GitHub connection data');
-    }
-  };
+  const resetProviderConnection = async (provider: Provider) => {
+    setResettingProvider(provider);
 
-  // Helper to reset Netlify connection
-  const resetNetlifyConnection = () => {
     try {
-      localStorage.removeItem('netlify_connection');
-      document.cookie = 'netlifyToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      toast.success('Netlify connection data cleared. Please refresh the page and reconnect.');
-      setDiagnosticResults(null);
-    } catch (error) {
-      console.error('Error clearing Netlify data:', error);
-      toast.error('Failed to clear Netlify connection data');
-    }
-  };
+      const response = await fetch('/api/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operation: 'disconnect', provider }),
+        cache: 'no-store',
+      });
 
-  // Helper to reset Vercel connection
-  const resetVercelConnection = () => {
-    try {
-      localStorage.removeItem('vercel_connection');
-      toast.success('Vercel connection data cleared. Please refresh the page and reconnect.');
-      setDiagnosticResults(null);
-    } catch (error) {
-      console.error('Error clearing Vercel data:', error);
-      toast.error('Failed to clear Vercel connection data');
-    }
-  };
+      if (!response.ok) {
+        throw new Error('Unable to clear the secure provider session');
+      }
 
-  // Helper to reset Supabase connection
-  const resetSupabaseConnection = () => {
-    try {
-      localStorage.removeItem('supabase_connection');
-      toast.success('Supabase connection data cleared. Please refresh the page and reconnect.');
-      setDiagnosticResults(null);
+      for (const key of LEGACY_STORAGE_KEYS[provider]) {
+        try {
+          localStorage.removeItem(key);
+        } catch {
+          // Continue even if browser storage is unavailable.
+        }
+      }
+
+      toast.success(`${PROVIDER_LABELS[provider]} connection data cleared. Reloading to clear in-memory state.`);
+      window.location.reload();
     } catch (error) {
-      console.error('Error clearing Supabase data:', error);
-      toast.error('Failed to clear Supabase connection data');
+      toast.error(error instanceof Error ? error.message : 'Failed to clear provider connection data');
+      setResettingProvider(null);
     }
   };
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Connection Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* GitHub Connection Card */}
-        <div className="p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 dark:hover:border-unqops-elements-borderColorActive/70 transition-all duration-200 h-[180px] flex flex-col">
-          <div className="flex items-center gap-2">
-            <div className="i-ph:github-logo text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent w-4 h-4" />
-            <div className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
-              GitHub Connection
-            </div>
-          </div>
-          {diagnosticResults ? (
-            <>
-              <div className="flex items-center gap-2 mt-2">
-                <span
-                  className={classNames(
-                    'text-xl font-semibold',
-                    diagnosticResults.localStorage.hasGithubConnection
-                      ? 'text-green-500 dark:text-green-400'
-                      : 'text-red-500 dark:text-red-400',
-                  )}
-                >
-                  {diagnosticResults.localStorage.hasGithubConnection ? 'Connected' : 'Not Connected'}
-                </span>
-              </div>
-              {diagnosticResults.localStorage.hasGithubConnection && (
-                <>
-                  <div className="text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5">
-                    <div className="i-ph:user w-3.5 h-3.5 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
-                    User: {diagnosticResults.localStorage.githubConnectionParsed?.user?.login || 'N/A'}
-                  </div>
-                  <div className="text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5">
-                    <div className="i-ph:check-circle w-3.5 h-3.5 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
-                    API Status:{' '}
-                    <Badge
-                      variant={
-                        diagnosticResults.apiEndpoints.github.every((r: { ok: boolean }) => r.ok)
-                          ? 'default'
-                          : 'destructive'
-                      }
-                      className="ml-1"
-                    >
-                      {diagnosticResults.apiEndpoints.github.every((r: { ok: boolean }) => r.ok) ? 'OK' : 'Failed'}
-                    </Badge>
-                  </div>
-                </>
-              )}
-              {!diagnosticResults.localStorage.hasGithubConnection && (
-                <Button
-                  onClick={() => window.location.reload()}
-                  variant="outline"
-                  size="sm"
-                  className="mt-auto self-start hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors"
-                >
-                  <div className="i-ph:plug w-3.5 h-3.5 mr-1" />
-                  Connect Now
-                </Button>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary flex items-center gap-2">
-                <div className="i-ph:info w-4 h-4" />
-                Run diagnostics to check connection status
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {PROVIDERS.map((provider) => {
+          const connected = diagnosticResults?.providers[provider] ?? false;
+          const verified = diagnosticResults?.checks[provider] ?? false;
 
-        {/* Netlify Connection Card */}
-        <div className="p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 dark:hover:border-unqops-elements-borderColorActive/70 transition-all duration-200 h-[180px] flex flex-col">
-          <div className="flex items-center gap-2">
-            <div className="i-unqops:netlify text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent w-4 h-4" />
-            <div className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
-              Netlify Connection
-            </div>
-          </div>
-          {diagnosticResults ? (
-            <>
-              <div className="flex items-center gap-2 mt-2">
-                <span
-                  className={classNames(
-                    'text-xl font-semibold',
-                    diagnosticResults.localStorage.hasNetlifyConnection
-                      ? 'text-green-500 dark:text-green-400'
-                      : 'text-red-500 dark:text-red-400',
-                  )}
-                >
-                  {diagnosticResults.localStorage.hasNetlifyConnection ? 'Connected' : 'Not Connected'}
-                </span>
+          return (
+            <section
+              key={provider}
+              className="p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 transition-all duration-200 min-h-[180px] flex flex-col"
+              aria-label={`${PROVIDER_LABELS[provider]} connection status`}
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className={`${PROVIDER_ICONS[provider]} text-unqops-elements-item-contentAccent w-4 h-4`}
+                  aria-hidden="true"
+                />
+                <h3 className="text-sm font-medium text-unqops-elements-textPrimary">
+                  {PROVIDER_LABELS[provider]} Connection
+                </h3>
               </div>
-              {diagnosticResults.localStorage.hasNetlifyConnection && (
-                <>
-                  <div className="text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5">
-                    <div className="i-ph:user w-3.5 h-3.5 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
-                    User:{' '}
-                    {diagnosticResults.localStorage.netlifyConnectionParsed?.user?.full_name ||
-                      diagnosticResults.localStorage.netlifyConnectionParsed?.user?.email ||
-                      'N/A'}
-                  </div>
-                  <div className="text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5">
-                    <div className="i-ph:check-circle w-3.5 h-3.5 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
-                    API Status:{' '}
-                    <Badge
-                      variant={diagnosticResults.apiEndpoints.netlify?.ok ? 'default' : 'destructive'}
-                      className="ml-1"
-                    >
-                      {diagnosticResults.apiEndpoints.netlify?.ok ? 'OK' : 'Failed'}
-                    </Badge>
-                  </div>
-                </>
-              )}
-              {!diagnosticResults.localStorage.hasNetlifyConnection && (
-                <Button
-                  onClick={() => window.location.reload()}
-                  variant="outline"
-                  size="sm"
-                  className="mt-auto self-start hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors"
-                >
-                  <div className="i-ph:plug w-3.5 h-3.5 mr-1" />
-                  Connect Now
-                </Button>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary flex items-center gap-2">
-                <div className="i-ph:info w-4 h-4" />
-                Run diagnostics to check connection status
-              </div>
-            </div>
-          )}
-        </div>
 
-        {/* Vercel Connection Card */}
-        <div className="p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 dark:hover:border-unqops-elements-borderColorActive/70 transition-all duration-200 h-[180px] flex flex-col">
-          <div className="flex items-center gap-2">
-            <div className="i-si:vercel text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent w-4 h-4" />
-            <div className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
-              Vercel Connection
-            </div>
-          </div>
-          {diagnosticResults ? (
-            <>
-              <div className="flex items-center gap-2 mt-2">
-                <span
-                  className={classNames(
-                    'text-xl font-semibold',
-                    diagnosticResults.localStorage.hasVercelConnection
-                      ? 'text-green-500 dark:text-green-400'
-                      : 'text-red-500 dark:text-red-400',
-                  )}
-                >
-                  {diagnosticResults.localStorage.hasVercelConnection ? 'Connected' : 'Not Connected'}
-                </span>
-              </div>
-              {diagnosticResults.localStorage.hasVercelConnection && (
+              {diagnosticResults ? (
                 <>
-                  <div className="text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5">
-                    <div className="i-ph:user w-3.5 h-3.5 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
-                    User:{' '}
-                    {diagnosticResults.localStorage.vercelConnectionParsed?.user?.username ||
-                      diagnosticResults.localStorage.vercelConnectionParsed?.user?.user?.username ||
-                      'N/A'}
-                  </div>
-                  <div className="text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5">
-                    <div className="i-ph:check-circle w-3.5 h-3.5 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
-                    API Status:{' '}
-                    <Badge
-                      variant={diagnosticResults.apiEndpoints.vercel?.ok ? 'default' : 'destructive'}
-                      className="ml-1"
+                  <div className="flex items-center gap-2 mt-3">
+                    <span
+                      className={classNames(
+                        'text-lg font-semibold',
+                        connected ? 'text-green-600 dark:text-green-400' : 'text-unqops-elements-textSecondary',
+                      )}
                     >
-                      {diagnosticResults.apiEndpoints.vercel?.ok ? 'OK' : 'Failed'}
-                    </Badge>
+                      {connected ? 'Connected' : 'Not Connected'}
+                    </span>
                   </div>
-                </>
-              )}
-              {!diagnosticResults.localStorage.hasVercelConnection && (
-                <Button
-                  onClick={() => window.location.reload()}
-                  variant="outline"
-                  size="sm"
-                  className="mt-auto self-start hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors"
-                >
-                  <div className="i-ph:plug w-3.5 h-3.5 mr-1" />
-                  Connect Now
-                </Button>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary flex items-center gap-2">
-                <div className="i-ph:info w-4 h-4" />
-                Run diagnostics to check connection status
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Supabase Connection Card */}
-        <div className="p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 dark:hover:border-unqops-elements-borderColorActive/70 transition-all duration-200 h-[180px] flex flex-col">
-          <div className="flex items-center gap-2">
-            <div className="i-si:supabase text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent w-4 h-4" />
-            <div className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
-              Supabase Connection
-            </div>
-          </div>
-          {diagnosticResults ? (
-            <>
-              <div className="flex items-center gap-2 mt-2">
-                <span
-                  className={classNames(
-                    'text-xl font-semibold',
-                    diagnosticResults.localStorage.hasSupabaseConnection
-                      ? 'text-green-500 dark:text-green-400'
-                      : 'text-red-500 dark:text-red-400',
+                  <p className="text-xs text-unqops-elements-textSecondary mt-2">
+                    {connected
+                      ? 'Encrypted HttpOnly credential session detected.'
+                      : 'No encrypted credential session was detected.'}
+                  </p>
+                  {connected && (
+                    <div className="text-xs text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5">
+                      Provider verification:
+                      <Badge variant={verified ? 'default' : 'destructive'} className="ml-1">
+                        {verified ? 'OK' : 'Failed'}
+                      </Badge>
+                    </div>
                   )}
-                >
-                  {diagnosticResults.localStorage.hasSupabaseConnection ? 'Configured' : 'Not Configured'}
-                </span>
-              </div>
-              {diagnosticResults.localStorage.hasSupabaseConnection && (
-                <>
-                  <div className="text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5 truncate">
-                    <div className="i-ph:link w-3.5 h-3.5 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent flex-shrink-0" />
-                    Project URL: {diagnosticResults.localStorage.supabaseConnectionParsed?.projectUrl || 'N/A'}
-                  </div>
-                  <div className="text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2 flex items-center gap-1.5">
-                    <div className="i-ph:check-circle w-3.5 h-3.5 text-unqops-elements-item-contentAccent dark:text-unqops-elements-item-contentAccent" />
-                    Config Status:{' '}
-                    <Badge
-                      variant={diagnosticResults.apiEndpoints.supabase?.ok ? 'default' : 'destructive'}
-                      className="ml-1"
+                  {connected && (
+                    <Button
+                      onClick={() => void resetProviderConnection(provider)}
+                      disabled={isRunning || resettingProvider !== null}
+                      variant="outline"
+                      size="sm"
+                      className="mt-auto self-start"
                     >
-                      {diagnosticResults.apiEndpoints.supabase?.ok ? 'OK' : 'Check Failed'}
-                    </Badge>
-                  </div>
+                      {resettingProvider === provider ? 'Clearing…' : `Reset ${PROVIDER_LABELS[provider]}`}
+                    </Button>
+                  )}
                 </>
+              ) : (
+                <div className="flex items-center justify-center flex-1 text-sm text-unqops-elements-textSecondary">
+                  Run diagnostics to check secure session status
+                </div>
               )}
-              {!diagnosticResults.localStorage.hasSupabaseConnection && (
-                <Button
-                  onClick={() => window.location.reload()}
-                  variant="outline"
-                  size="sm"
-                  className="mt-auto self-start hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors"
-                >
-                  <div className="i-ph:plug w-3.5 h-3.5 mr-1" />
-                  Configure Now
-                </Button>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary flex items-center gap-2">
-                <div className="i-ph:info w-4 h-4" />
-                Run diagnostics to check connection status
-              </div>
-            </div>
-          )}
-        </div>
+            </section>
+          );
+        })}
       </div>
 
-      {/* Action Buttons */}
       <div className="flex flex-wrap gap-4">
-        <Button
-          onClick={runDiagnostics}
-          disabled={isRunning}
-          variant="outline"
-          className="flex items-center gap-2 hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors"
-        >
+        <Button onClick={runDiagnostics} disabled={isRunning || resettingProvider !== null} variant="outline">
           {isRunning ? (
-            <div className="i-ph:spinner-gap w-4 h-4 animate-spin" />
+            <div className="i-ph:spinner-gap w-4 h-4 animate-spin mr-2" aria-hidden="true" />
           ) : (
-            <div className="i-ph:activity w-4 h-4" />
+            <div className="i-ph:activity w-4 h-4 mr-2" aria-hidden="true" />
           )}
-          {isRunning ? 'Running Diagnostics...' : 'Run Diagnostics'}
-        </Button>
-
-        <Button
-          onClick={resetGitHubConnection}
-          disabled={isRunning || !diagnosticResults?.localStorage.hasGithubConnection}
-          variant="outline"
-          className="flex items-center gap-2 hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <div className="i-ph:github-logo w-4 h-4" />
-          Reset GitHub
-        </Button>
-
-        <Button
-          onClick={resetNetlifyConnection}
-          disabled={isRunning || !diagnosticResults?.localStorage.hasNetlifyConnection}
-          variant="outline"
-          className="flex items-center gap-2 hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <div className="i-si:netlify w-4 h-4" />
-          Reset Netlify
-        </Button>
-
-        <Button
-          onClick={resetVercelConnection}
-          disabled={isRunning || !diagnosticResults?.localStorage.hasVercelConnection}
-          variant="outline"
-          className="flex items-center gap-2 hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <div className="i-si:vercel w-4 h-4" />
-          Reset Vercel
-        </Button>
-
-        <Button
-          onClick={resetSupabaseConnection}
-          disabled={isRunning || !diagnosticResults?.localStorage.hasSupabaseConnection}
-          variant="outline"
-          className="flex items-center gap-2 hover:bg-unqops-elements-item-backgroundActive/10 hover:text-unqops-elements-textPrimary dark:hover:bg-unqops-elements-item-backgroundActive/10 dark:hover:text-unqops-elements-textPrimary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <div className="i-si:supabase w-4 h-4" />
-          Reset Supabase
+          {isRunning ? 'Running Diagnostics…' : 'Run Diagnostics'}
         </Button>
       </div>
 
-      {/* Details Panel */}
       {diagnosticResults && (
         <div className="mt-4">
           <Collapsible open={showDetails} onOpenChange={setShowDetails} className="w-full">
             <CollapsibleTrigger className="w-full">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 dark:hover:border-unqops-elements-borderColorActive/70 transition-all duration-200">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-unqops-elements-background dark:bg-unqops-elements-background-depth-2 border border-unqops-elements-borderColor hover:border-unqops-elements-borderColorActive/70 transition-all duration-200">
                 <div className="flex items-center gap-2">
-                  <CodeBracketIcon className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm font-medium text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
-                    Diagnostic Details
+                  <CodeBracketIcon className="w-4 h-4 text-blue-500" aria-hidden="true" />
+                  <span className="text-sm font-medium text-unqops-elements-textPrimary">
+                    Diagnostic Details (no credentials included)
                   </span>
                 </div>
                 <ChevronDownIcon
                   className={classNames(
-                    'w-4 h-4 transform transition-transform duration-200 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary',
+                    'w-4 h-4 transform transition-transform duration-200 text-unqops-elements-textSecondary',
                     showDetails ? 'rotate-180' : '',
                   )}
+                  aria-hidden="true"
                 />
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="overflow-hidden">
-              <div className="p-4 mt-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-1 border border-unqops-elements-borderColor dark:border-unqops-elements-borderColor">
-                <pre className="text-xs overflow-auto max-h-96 text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary">
+              <div className="p-4 mt-2 rounded-lg bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-1 border border-unqops-elements-borderColor">
+                <p className="text-xs text-unqops-elements-textSecondary mb-3">
+                  Diagnostics intentionally does not read localStorage, cookies, or provider credential values in the
+                  browser.
+                </p>
+                <pre className="text-xs overflow-auto max-h-96 text-unqops-elements-textSecondary">
                   {JSON.stringify(diagnosticResults, null, 2)}
                 </pre>
               </div>

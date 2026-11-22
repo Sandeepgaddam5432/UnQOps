@@ -1,241 +1,251 @@
 import { json } from '@remix-run/cloudflare';
-import JSZip from 'jszip';
 
-// Function to detect if we're running in Cloudflare
-function isCloudflareEnvironment(context: any): boolean {
-  // Check if we're in production AND have Cloudflare Pages specific env vars
-  const isProduction = process.env.NODE_ENV === 'production';
-  const hasCfPagesVars = !!(
-    context?.cloudflare?.env?.CF_PAGES ||
-    context?.cloudflare?.env?.CF_PAGES_URL ||
-    context?.cloudflare?.env?.CF_PAGES_COMMIT_SHA
-  );
+const GITHUB_API = 'https://api.github.com';
+const MAX_FILES = 300;
+const MAX_TEMPLATE_FILE_BYTES = 100_000;
+const MAX_LOCK_FILE_BYTES = 1_000_000;
+const MAX_TOTAL_FILE_BYTES = 5_000_000;
+const ALLOWED_TEMPLATE_REPOSITORIES = new Set(
+  [
+    'xKevIsDev/unqops-expo-template',
+    'xKevIsDev/unqops-astro-basic-template',
+    'xKevIsDev/unqops-nextjs-shadcn-template',
+    'xKevIsDev/vite-shadcn',
+    'xKevIsDev/unqops-qwik-ts-template',
+    'xKevIsDev/unqops-remix-ts-template',
+    'xKevIsDev/unqops-slidev-template',
+    'xKevIsDev/vanilla-vite-template',
+    'xKevIsDev/unqops-vite-react-ts-template',
+    'xKevIsDev/unqops-vite-ts-template',
+    'xKevIsDev/unqops-vue-template',
+    'xKevIsDev/unqops-angular-template',
+    'xKevIsDev/solidjs-ts-tw',
+  ].map((repo) => repo.toLowerCase()),
+);
 
-  return isProduction && hasCfPagesVars;
+interface GitHubTreeEntry {
+  path: string;
+  type: string;
+  size?: number;
 }
 
-// Cloudflare-compatible method using GitHub Contents API
-async function fetchRepoContentsCloudflare(repo: string, githubToken?: string) {
-  const baseUrl = 'https://api.github.com';
+interface GitHubContentResponse {
+  content?: string;
+  encoding?: string;
+}
 
-  // Get repository info to find default branch
-  const repoResponse = await fetch(`${baseUrl}/repos/${repo}`, {
-    headers: {
-      Accept: 'application/vnd.github.v3+json',
-      'User-Agent': 'UnQOps-app',
-      ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
-    },
-  });
+function isValidPublicRepository(value: string): boolean {
+  const parts = value.split('/');
 
-  if (!repoResponse.ok) {
-    throw new Error(`Repository not found: ${repo}`);
+  return (
+    parts.length === 2 &&
+    parts.every((part) => /^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/.test(part) && part !== '.' && part !== '..') &&
+    ALLOWED_TEMPLATE_REPOSITORIES.has(value.toLowerCase())
+  );
+}
+
+function isSafeTemplatePath(path: string): boolean {
+  const segments = path.split('/');
+
+  return (
+    path.length > 0 &&
+    path.length <= 512 &&
+    !path.startsWith('/') &&
+    !path.includes(String.fromCharCode(92)) &&
+    !/[\u0000-\u001f\u007f"&<>]/.test(path) &&
+    segments.every((segment) => segment && segment !== '.' && segment !== '..' && segment !== '.git')
+  );
+}
+
+function isLockFile(path: string): boolean {
+  return ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'].includes(path.split('/').pop() ?? '');
+}
+
+function isSensitiveTemplatePath(path: string): boolean {
+  const normalized = path.replaceAll('\\', '/');
+  const fileName = normalized.split('/').pop()?.toLowerCase() ?? '';
+  const safeEnvExamples = new Set(['.env.example', '.env.sample', '.env.template']);
+
+  if (fileName.startsWith('.env') && !safeEnvExamples.has(fileName)) {
+    return true;
   }
 
-  const repoData = (await repoResponse.json()) as any;
-  const defaultBranch = repoData.default_branch;
+  if (['.npmrc', '.netrc', 'credentials.json', 'secrets.json', 'service-account.json'].includes(fileName)) {
+    return true;
+  }
 
-  // Get the tree recursively
-  const treeResponse = await fetch(`${baseUrl}/repos/${repo}/git/trees/${defaultBranch}?recursive=1`, {
-    headers: {
-      Accept: 'application/vnd.github.v3+json',
-      'User-Agent': 'UnQOps-app',
-      ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
-    },
+  if (/^(id_rsa|id_ed25519)(\.pub)?$/.test(fileName)) {
+    return true;
+  }
+
+  if (/\.(pem|p12|pfx|key|keystore)$/i.test(fileName)) {
+    return true;
+  }
+
+  return false;
+}
+
+function decodeBase64Utf8(value: string, maxBytes: number): { content: string; byteLength: number } | null {
+  if (value.length > maxBytes * 2) {
+    return null;
+  }
+
+  const normalized = value.replace(/\s/g, '');
+  const binary = atob(normalized);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+
+  if (bytes.byteLength > maxBytes) {
+    return null;
+  }
+
+  const content = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+
+  return { content, byteLength: bytes.byteLength };
+}
+
+async function fetchPublicRepositoryFiles(
+  repo: string,
+  signal: AbortSignal,
+): Promise<Array<{ name: string; path: string; content: string }>> {
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'UnQOps-app',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+
+  const repoResponse = await fetch(`${GITHUB_API}/repos/${repo}`, { headers, signal });
+
+  if (!repoResponse.ok) {
+    throw new Error('Repository not found or unavailable');
+  }
+
+  const repository = (await repoResponse.json()) as { default_branch?: string };
+  const branch = repository.default_branch;
+
+  if (!branch || !/^[A-Za-z0-9_.\/-]{1,255}$/.test(branch)) {
+    throw new Error('Repository branch unavailable');
+  }
+
+  const treeResponse = await fetch(`${GITHUB_API}/repos/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`, {
+    headers,
+    signal,
   });
 
   if (!treeResponse.ok) {
-    throw new Error(`Failed to fetch repository tree: ${treeResponse.status}`);
+    throw new Error('Repository files unavailable');
   }
 
-  const treeData = (await treeResponse.json()) as any;
-
-  // Filter for files only (not directories) and limit size
-  const files = treeData.tree.filter((item: any) => {
-    if (item.type !== 'blob') {
+  const tree = (await treeResponse.json()) as { tree?: GitHubTreeEntry[]; truncated?: boolean };
+  let totalSelectedBytes = 0;
+  let selectedFileCount = 0;
+  const files = (Array.isArray(tree.tree) ? tree.tree : []).filter((entry) => {
+    if (selectedFileCount >= MAX_FILES || entry.type !== 'blob' || !entry.path || !isSafeTemplatePath(entry.path)) {
       return false;
     }
 
-    if (item.path.startsWith('.git/')) {
+    if (isSensitiveTemplatePath(entry.path)) {
       return false;
     }
 
-    // Allow lock files even if they're large
-    const isLockFile =
-      item.path.endsWith('package-lock.json') ||
-      item.path.endsWith('yarn.lock') ||
-      item.path.endsWith('pnpm-lock.yaml');
+    const size = entry.size;
 
-    // For non-lock files, limit size to 100KB
-    if (!isLockFile && item.size >= 100000) {
+    if (typeof size !== 'number' || !Number.isSafeInteger(size) || size < 0) {
       return false;
     }
+
+    const maxFileSize = isLockFile(entry.path) ? MAX_LOCK_FILE_BYTES : MAX_TEMPLATE_FILE_BYTES;
+
+    if (size > maxFileSize || totalSelectedBytes + size > MAX_TOTAL_FILE_BYTES) {
+      return false;
+    }
+
+    selectedFileCount += 1;
+    totalSelectedBytes += size;
 
     return true;
   });
 
-  // Fetch file contents in batches to avoid overwhelming the API
-  const batchSize = 10;
-  const fileContents = [];
+  const results: Array<{ name: string; path: string; content: string }> = [];
+  let totalFetchedBytes = 0;
 
-  for (let i = 0; i < files.length; i += batchSize) {
-    const batch = files.slice(i, i + batchSize);
-    const batchPromises = batch.map(async (file: any) => {
-      try {
-        const contentResponse = await fetch(`${baseUrl}/repos/${repo}/contents/${file.path}`, {
-          headers: {
-            Accept: 'application/vnd.github.v3+json',
-            'User-Agent': 'UnQOps-app',
-            ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
+  for (let offset = 0; offset < files.length; offset += 10) {
+    const batch = files.slice(offset, offset + 10);
+    const batchResults = await Promise.all(
+      batch.map(async (file) => {
+        const encodedPath = file.path.split('/').map(encodeURIComponent).join('/');
+        const response = await fetch(
+          `${GITHUB_API}/repos/${repo}/contents/${encodedPath}?ref=${encodeURIComponent(branch)}`,
+          {
+            headers,
+            signal,
           },
-        });
+        );
 
-        if (!contentResponse.ok) {
-          console.warn(`Failed to fetch ${file.path}: ${contentResponse.status}`);
+        if (!response.ok) {
           return null;
         }
 
-        const contentData = (await contentResponse.json()) as any;
-        const content = atob(contentData.content.replace(/\s/g, ''));
+        const content = (await response.json()) as GitHubContentResponse;
 
-        return {
-          name: file.path.split('/').pop() || '',
-          path: file.path,
-          content,
-        };
-      } catch (error) {
-        console.warn(`Error fetching ${file.path}:`, error);
-        return null;
+        if (content.encoding !== 'base64' || typeof content.content !== 'string') {
+          return null;
+        }
+
+        try {
+          const decoded = decodeBase64Utf8(
+            content.content,
+            isLockFile(file.path) ? MAX_LOCK_FILE_BYTES : MAX_TEMPLATE_FILE_BYTES,
+          );
+
+          if (!decoded) {
+            return null;
+          }
+
+          return {
+            name: file.path.split('/').pop() ?? '',
+            path: file.path,
+            content: decoded.content,
+            byteLength: decoded.byteLength,
+          };
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    for (const file of batchResults) {
+      if (!file || totalFetchedBytes + file.byteLength > MAX_TOTAL_FILE_BYTES) {
+        continue;
       }
-    });
 
-    const batchResults = await Promise.all(batchPromises);
-    fileContents.push(...batchResults.filter(Boolean));
+      results.push({ name: file.name, path: file.path, content: file.content });
+      totalFetchedBytes += file.byteLength;
+    }
 
-    // Add a small delay between batches to be respectful to the API
-    if (i + batchSize < files.length) {
+    if (offset + 10 < files.length) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
 
-  return fileContents;
+  return results;
 }
 
-// Your existing method for non-Cloudflare environments
-async function fetchRepoContentsZip(repo: string, githubToken?: string) {
-  const baseUrl = 'https://api.github.com';
+export async function loader({ request }: { request: Request }) {
+  const repo = new URL(request.url).searchParams.get('repo')?.trim() ?? '';
+  const headers = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' };
 
-  // Get the latest release
-  const releaseResponse = await fetch(`${baseUrl}/repos/${repo}/releases/latest`, {
-    headers: {
-      Accept: 'application/vnd.github.v3+json',
-      'User-Agent': 'UnQOps-app',
-      ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
-    },
-  });
-
-  if (!releaseResponse.ok) {
-    throw new Error(`GitHub API error: ${releaseResponse.status} - ${releaseResponse.statusText}`);
-  }
-
-  const releaseData = (await releaseResponse.json()) as any;
-  const zipballUrl = releaseData.zipball_url;
-
-  // Fetch the zipball
-  const zipResponse = await fetch(zipballUrl, {
-    headers: {
-      ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
-    },
-  });
-
-  if (!zipResponse.ok) {
-    throw new Error(`Failed to fetch release zipball: ${zipResponse.status}`);
-  }
-
-  // Get the zip content as ArrayBuffer
-  const zipArrayBuffer = await zipResponse.arrayBuffer();
-
-  // Use JSZip to extract the contents
-  const zip = await JSZip.loadAsync(zipArrayBuffer);
-
-  // Find the root folder name
-  let rootFolderName = '';
-  zip.forEach((relativePath) => {
-    if (!rootFolderName && relativePath.includes('/')) {
-      rootFolderName = relativePath.split('/')[0];
-    }
-  });
-
-  // Extract all files
-  const promises = Object.keys(zip.files).map(async (filename) => {
-    const zipEntry = zip.files[filename];
-
-    // Skip directories
-    if (zipEntry.dir) {
-      return null;
-    }
-
-    // Skip the root folder itself
-    if (filename === rootFolderName) {
-      return null;
-    }
-
-    // Remove the root folder from the path
-    let normalizedPath = filename;
-
-    if (rootFolderName && filename.startsWith(rootFolderName + '/')) {
-      normalizedPath = filename.substring(rootFolderName.length + 1);
-    }
-
-    // Get the file content
-    const content = await zipEntry.async('string');
-
-    return {
-      name: normalizedPath.split('/').pop() || '',
-      path: normalizedPath,
-      content,
-    };
-  });
-
-  const results = await Promise.all(promises);
-
-  return results.filter(Boolean);
-}
-
-export async function loader({ request, context }: { request: Request; context: any }) {
-  const url = new URL(request.url);
-  const repo = url.searchParams.get('repo');
-
-  if (!repo) {
-    return json({ error: 'Repository name is required' }, { status: 400 });
+  if (!isValidPublicRepository(repo)) {
+    return json({ error: 'A supported public starter repository is required' }, { status: 400, headers });
   }
 
   try {
-    // Access environment variables from Cloudflare context or process.env
-    const githubToken = context?.cloudflare?.env?.GITHUB_TOKEN || process.env.GITHUB_TOKEN;
-
-    let fileList;
-
-    if (isCloudflareEnvironment(context)) {
-      fileList = await fetchRepoContentsCloudflare(repo, githubToken);
-    } else {
-      fileList = await fetchRepoContentsZip(repo, githubToken);
-    }
-
-    // Filter out .git files for both methods
-    const filteredFiles = fileList.filter((file: any) => !file.path.startsWith('.git'));
-
-    return json(filteredFiles);
-  } catch (error) {
-    console.error('Error processing GitHub template:', error);
-    console.error('Repository:', repo);
-    console.error('Error details:', error instanceof Error ? error.message : String(error));
-
-    return json(
-      {
-        error: 'Failed to fetch template files',
-        details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 },
-    );
+    /*
+     * Intentionally unauthenticated: this route only imports public template repositories.
+     * Never use a server-side GitHub token here, because callers can choose the repository.
+     */
+    const files = await fetchPublicRepositoryFiles(repo, request.signal);
+    return json(files, { headers });
+  } catch {
+    return json({ error: 'Unable to load files from this public repository' }, { status: 404, headers });
   }
 }

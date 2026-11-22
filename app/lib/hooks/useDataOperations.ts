@@ -719,17 +719,23 @@ export function useDataOperations({
         // Step 3: Validate data
         showProgress('Validating API keys data', 60);
 
-        // Get current API keys from cookies for potential undo
-        const apiKeysStr = document.cookie.split(';').find((row) => row.trim().startsWith('apiKeys='));
-        const currentApiKeys = apiKeysStr ? JSON.parse(decodeURIComponent(apiKeysStr.split('=')[1])) : {};
-        setLastOperation({ type: 'import-api-keys', data: { previous: currentApiKeys } });
-
-        // Step 4: Import API keys
+        // Step 4: Import API keys through the server-side HttpOnly cookie route.
         showProgress('Applying API keys', 80);
 
         const newKeys = ImportExportService.importAPIKeys(importedData);
-        const apiKeysJson = JSON.stringify(newKeys);
-        document.cookie = `apiKeys=${apiKeysJson}; path=/; max-age=31536000`;
+        const response = await fetch('/api/api-keys', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keys: newKeys }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save imported API keys');
+        }
+
+        setLastOperation(null);
 
         // Step 5: Complete
         showProgress('Completing import', 100);
@@ -737,15 +743,10 @@ export function useDataOperations({
         // Dismiss progress toast before showing success toast
         toast.dismiss('progress-toast');
 
-        // Count how many keys were imported
         const keyCount = Object.keys(newKeys).length;
-        const newKeyCount = Object.keys(newKeys).filter(
-          (key) => !currentApiKeys[key] || currentApiKeys[key] !== newKeys[key],
-        ).length;
 
         toast.success(
-          `${keyCount} API keys imported successfully (${newKeyCount} new/updated)\n` +
-            'Note: Keys are stored in browser cookies. For server-side usage, add them to your .env.local file.',
+          `${keyCount} API keys imported successfully. They are stored in HttpOnly cookies and are not readable by page scripts.`,
           { position: 'bottom-right', autoClose: 5000 },
         );
 
@@ -990,7 +991,13 @@ export function useDataOperations({
       showProgress('Retrieving API keys', 25);
 
       // Create a fetch request to get API keys from server
-      const response = await fetch('/api/export-api-keys');
+      const response = await fetch('/api/export-api-keys', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      });
 
       if (!response.ok) {
         throw new Error('Failed to retrieve API keys from server');
@@ -1027,9 +1034,6 @@ export function useDataOperations({
         position: 'bottom-right',
         autoClose: 3000,
       });
-
-      // Save operation for potential undo
-      setLastOperation({ type: 'export-api-keys', data: apiKeys });
     } catch (error) {
       console.error('Error exporting API keys:', error);
 
@@ -1164,28 +1168,6 @@ export function useDataOperations({
 
           if (onReloadChats) {
             onReloadChats();
-          }
-
-          break;
-        }
-
-        case 'import-api-keys': {
-          // Restore previous API keys
-          const previousAPIKeys = lastOperation.data.previous;
-          const newKeys = ImportExportService.importAPIKeys(previousAPIKeys);
-          const apiKeysJson = JSON.stringify(newKeys);
-          document.cookie = `apiKeys=${apiKeysJson}; path=/; max-age=31536000`;
-
-          // Dismiss progress toast before showing success toast
-          toast.dismiss('progress-toast');
-
-          toast.success('Operation undone successfully', {
-            position: 'bottom-right',
-            autoClose: 3000,
-          });
-
-          if (onReloadSettings) {
-            onReloadSettings();
           }
 
           break;

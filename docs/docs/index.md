@@ -51,7 +51,6 @@ If you're new to installing software from GitHub, don't worry! If you encounter 
 
 1. **Install Git**: [Download Git](https://git-scm.com/downloads)
 2. **Install Node.js**: [Download Node.js](https://nodejs.org/en/download/)
-
    - After installation, the Node.js path is usually added to your system automatically. To verify:
      - **Windows**: Search for "Edit the system environment variables," click "Environment Variables," and check if `Node.js` is in the `Path` variable.
      - **Mac/Linux**: Open a terminal and run:
@@ -258,3 +257,9 @@ Here are some tips to get the most out of bolt.diy:
 - **Scaffold the basics first, then add features**: Make sure the basic structure of your application is in place before diving into more advanced functionality. This helps Bolt understand the foundation of your project and ensure everything is wired up right before building out more advanced functionality.
 
 - **Batch simple instructions**: Save time by combining simple instructions into one message. For example, you can ask Bolt to change the color scheme, add mobile responsiveness, and restart the dev server, all in one go saving you time and reducing API credit consumption significantly.
+
+---
+
+## Security and credentials
+
+UnQOps applies same-origin and request-size safeguards to credential-backed API routes. Provider API keys are stored in HttpOnly cookies, while external integration credentials and remote MCP networking still have documented limitations. Review the [security and credential-handling notes](security.md) before exposing a deployment to other users.

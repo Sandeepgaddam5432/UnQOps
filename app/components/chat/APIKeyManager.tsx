@@ -1,70 +1,51 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { IconButton } from '~/components/ui/IconButton';
 import type { ProviderInfo } from '~/types/model';
-import Cookies from 'js-cookie';
 
 interface APIKeyManagerProps {
   provider: ProviderInfo;
-  apiKey: string;
-  setApiKey: (key: string) => void;
-  getApiKeyLink?: string;
-  labelForGetApiKey?: string;
+  isApiKeySet: boolean;
+  setApiKey: (key: string) => Promise<void>;
 }
 
-// cache which stores whether the provider's API key is set via environment variable
-const providerEnvKeyStatusCache: Record<string, boolean> = {};
+const providerEnvKeyStatusCache = new Map<string, boolean>();
 
-const apiKeyMemoizeCache: { [k: string]: Record<string, string> } = {};
-
-export function getApiKeysFromCookies() {
-  const storedApiKeys = Cookies.get('apiKeys');
-  let parsedKeys: Record<string, string> = {};
-
-  if (storedApiKeys) {
-    parsedKeys = apiKeyMemoizeCache[storedApiKeys];
-
-    if (!parsedKeys) {
-      parsedKeys = apiKeyMemoizeCache[storedApiKeys] = JSON.parse(storedApiKeys);
-    }
-  }
-
-  return parsedKeys;
-}
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const APIKeyManager: React.FC<APIKeyManagerProps> = ({ provider, apiKey, setApiKey }) => {
+export const ApiKeyManager: React.FC<APIKeyManagerProps> = ({ provider, isApiKeySet, setApiKey }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [tempKey, setTempKey] = useState(apiKey);
+  const [tempKey, setTempKey] = useState('');
   const [isEnvKeySet, setIsEnvKeySet] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Reset states and load saved key when provider changes
   useEffect(() => {
-    // Load saved API key from cookies for this provider
-    const savedKeys = getApiKeysFromCookies();
-    const savedKey = savedKeys[provider.name] || '';
-
-    setTempKey(savedKey);
-    setApiKey(savedKey);
+    setTempKey('');
     setIsEditing(false);
+    setError(null);
   }, [provider.name]);
 
   const checkEnvApiKey = useCallback(async () => {
-    // Check cache first
-    if (providerEnvKeyStatusCache[provider.name] !== undefined) {
-      setIsEnvKeySet(providerEnvKeyStatusCache[provider.name]);
+    const cachedStatus = providerEnvKeyStatusCache.get(provider.name);
+
+    if (cachedStatus !== undefined) {
+      setIsEnvKeySet(cachedStatus);
       return;
     }
 
     try {
-      const response = await fetch(`/api/check-env-key?provider=${encodeURIComponent(provider.name)}`);
-      const data = await response.json();
-      const isSet = (data as { isSet: boolean }).isSet;
+      const response = await fetch(`/api/check-env-key?provider=${encodeURIComponent(provider.name)}`, {
+        cache: 'no-store',
+        credentials: 'same-origin',
+      });
 
-      // Cache the result
-      providerEnvKeyStatusCache[provider.name] = isSet;
+      if (!response.ok) {
+        throw new Error('Environment credential status request failed');
+      }
+
+      const data = (await response.json()) as { isSet?: unknown };
+      const isSet = data.isSet === true;
+      providerEnvKeyStatusCache.set(provider.name, isSet);
       setIsEnvKeySet(isSet);
-    } catch (error) {
-      console.error('Failed to check environment API key:', error);
+    } catch {
       setIsEnvKeySet(false);
     }
   }, [provider.name]);
@@ -73,97 +54,112 @@ export const APIKeyManager: React.FC<APIKeyManagerProps> = ({ provider, apiKey, 
     checkEnvApiKey();
   }, [checkEnvApiKey]);
 
-  const handleSave = () => {
-    // Save to parent state
-    setApiKey(tempKey);
+  const saveKey = async (key: string) => {
+    setIsSaving(true);
+    setError(null);
 
-    // Save to cookies
-    const currentKeys = getApiKeysFromCookies();
-    const newKeys = { ...currentKeys, [provider.name]: tempKey };
-    Cookies.set('apiKeys', JSON.stringify(newKeys));
-
-    setIsEditing(false);
+    try {
+      await setApiKey(key);
+      setTempKey('');
+      setIsEditing(false);
+    } catch {
+      setError('Unable to save the API key. Check your connection and try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <div className="flex items-center justify-between py-3 px-1">
-      <div className="flex items-center gap-2 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-unqops-elements-textSecondary">{provider?.name} API Key:</span>
-          {!isEditing && (
-            <div className="flex items-center gap-2">
-              {apiKey ? (
-                <>
-                  <div className="i-ph:check-circle-fill text-green-500 w-4 h-4" />
-                  <span className="text-xs text-green-500">Set via UI</span>
-                </>
-              ) : isEnvKeySet ? (
-                <>
-                  <div className="i-ph:check-circle-fill text-green-500 w-4 h-4" />
-                  <span className="text-xs text-green-500">Set via environment variable</span>
-                </>
-              ) : (
-                <>
-                  <div className="i-ph:x-circle-fill text-red-500 w-4 h-4" />
-                  <span className="text-xs text-red-500">Not Set (Please set via UI or ENV_VAR)</span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+    <div className="flex flex-wrap items-center justify-between gap-2 px-1 py-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <span className="text-sm font-medium text-unqops-elements-textSecondary">{provider.name} API key:</span>
+        {!isEditing && (
+          <span
+            className={
+              isApiKeySet || isEnvKeySet ? 'text-xs text-green-500' : 'text-xs text-unqops-elements-textTertiary'
+            }
+          >
+            {isApiKeySet ? 'Set via UI' : isEnvKeySet ? 'Set via environment variable' : 'Not set'}
+          </span>
+        )}
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex shrink-0 items-center gap-2">
         {isEditing ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <input
               type="password"
               value={tempKey}
-              placeholder="Enter API Key"
-              onChange={(e) => setTempKey(e.target.value)}
-              className="w-[300px] px-3 py-1.5 text-sm rounded border border-unqops-elements-borderColor 
-                        bg-unqops-elements-prompt-background text-unqops-elements-textPrimary 
-                        focus:outline-none focus:ring-2 focus:ring-unqops-elements-focus"
+              autoComplete="new-password"
+              placeholder="Enter API key"
+              aria-label={`${provider.name} API key`}
+              onChange={(event) => setTempKey(event.target.value)}
+              className="w-[min(300px,calc(100vw-180px))] min-w-32 rounded border border-unqops-elements-borderColor bg-unqops-elements-prompt-background px-3 py-1.5 text-sm text-unqops-elements-textPrimary focus:outline-none focus:ring-2 focus:ring-unqops-elements-focus"
             />
             <IconButton
-              onClick={handleSave}
-              title="Save API Key"
-              className="bg-green-500/10 hover:bg-green-500/20 text-green-500"
+              onClick={() => void saveKey(tempKey)}
+              title="Save API key"
+              disabled={isSaving || tempKey.length === 0}
+              className="bg-green-500/10 text-green-500 hover:bg-green-500/20 disabled:opacity-50"
             >
               <div className="i-ph:check w-4 h-4" />
             </IconButton>
+            {isApiKeySet && (
+              <IconButton
+                onClick={() => void saveKey('')}
+                title="Clear saved API key"
+                disabled={isSaving}
+                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 disabled:opacity-50"
+              >
+                <div className="i-ph:trash w-4 h-4" />
+              </IconButton>
+            )}
             <IconButton
-              onClick={() => setIsEditing(false)}
+              onClick={() => {
+                setTempKey('');
+                setError(null);
+                setIsEditing(false);
+              }}
               title="Cancel"
-              className="bg-red-500/10 hover:bg-red-500/20 text-red-500"
+              disabled={isSaving}
+              className="bg-unqops-elements-background-depth-3 text-unqops-elements-textSecondary hover:bg-unqops-elements-background-depth-4"
             >
               <div className="i-ph:x w-4 h-4" />
             </IconButton>
           </div>
         ) : (
           <>
-            {
+            <IconButton
+              onClick={() => setIsEditing(true)}
+              title={isApiKeySet ? 'Replace API key' : 'Set API key'}
+              className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+            >
+              <div className="i-ph:pencil-simple w-4 h-4" />
+            </IconButton>
+            {provider.getApiKeyLink && !isApiKeySet && (
               <IconButton
-                onClick={() => setIsEditing(true)}
-                title="Edit API Key"
-                className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-500"
+                onClick={() => window.open(provider.getApiKeyLink, '_blank', 'noopener,noreferrer')}
+                title={provider.labelForGetApiKey || 'Get API key'}
+                className="flex items-center gap-2 bg-purple-500/10 text-purple-500 hover:bg-purple-500/20"
               >
-                <div className="i-ph:pencil-simple w-4 h-4" />
-              </IconButton>
-            }
-            {provider?.getApiKeyLink && !apiKey && (
-              <IconButton
-                onClick={() => window.open(provider?.getApiKeyLink)}
-                title="Get API Key"
-                className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-500 flex items-center gap-2"
-              >
-                <span className="text-xs whitespace-nowrap">{provider?.labelForGetApiKey || 'Get API Key'}</span>
-                <div className={`${provider?.icon || 'i-ph:key'} w-4 h-4`} />
+                <span className="text-xs whitespace-nowrap">{provider.labelForGetApiKey || 'Get API key'}</span>
+                <div className={`${provider.icon || 'i-ph:key'} w-4 h-4`} />
               </IconButton>
             )}
           </>
         )}
       </div>
+
+      {isEditing && (
+        <p className="basis-full text-xs text-unqops-elements-textTertiary">
+          The saved key is never sent back to the browser. Enter a replacement, or use the clear button to remove it.
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="basis-full text-xs text-unqops-elements-icon-error">
+          {error}
+        </p>
+      )}
     </div>
   );
 };

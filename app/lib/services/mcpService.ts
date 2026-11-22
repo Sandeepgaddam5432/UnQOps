@@ -7,7 +7,9 @@ import {
   formatDataStreamPart,
 } from 'ai';
 import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { isSafeMcpRemoteUrl } from '~/lib/api/mcp-network-security';
 import { z } from 'zod';
 import type { ToolCallAnnotation } from '~/types/context';
 import {
@@ -102,21 +104,55 @@ export type MCPServerUnavailable = {
 export type MCPServer = MCPServerAvailable | MCPServerUnavailable;
 
 export class MCPService {
-  private static _instance: MCPService;
-  private _tools: ToolSet = {};
-  private _toolsWithoutExecute: ToolSet = {};
-  private _mcpToolsPerServer: MCPServerTools = {};
+  private static readonly _instances = new Map<string, { instance: MCPService; lastUsed: number }>();
+  private static readonly _maxInstances = 100;
+  private static readonly _sessionTtlMs = 60 * 60 * 1_000;
+  private _tools: ToolSet = Object.create(null);
+  private _toolsWithoutExecute: ToolSet = Object.create(null);
+  private _mcpToolsPerServer: MCPServerTools = Object.create(null);
   private _toolNamesToServerNames = new Map<string, string>();
+  private _allowLocalDevelopment = false;
   private _config: MCPConfig = {
-    mcpServers: {},
+    mcpServers: Object.create(null),
   };
 
-  static getInstance(): MCPService {
-    if (!MCPService._instance) {
-      MCPService._instance = new MCPService();
+  static getInstance(sessionId = 'default'): MCPService {
+    const key = sessionId === 'default' || /^[a-f0-9]{64}$/.test(sessionId) ? sessionId : 'default';
+    const now = Date.now();
+
+    for (const [existingKey, entry] of this._instances) {
+      if (existingKey !== 'default' && now - entry.lastUsed > this._sessionTtlMs) {
+        this._instances.delete(existingKey);
+        void entry.instance.dispose();
+      }
     }
 
-    return MCPService._instance;
+    let entry = this._instances.get(key);
+
+    if (!entry) {
+      if (this._instances.size >= this._maxInstances) {
+        const oldestEntry = [...this._instances.entries()]
+          .filter(([existingKey]) => existingKey !== 'default')
+          .sort(([, left], [, right]) => left.lastUsed - right.lastUsed)[0];
+
+        if (oldestEntry) {
+          this._instances.delete(oldestEntry[0]);
+          void oldestEntry[1].instance.dispose();
+        }
+      }
+
+      entry = { instance: new MCPService(), lastUsed: now };
+      this._instances.set(key, entry);
+    }
+
+    entry.lastUsed = now;
+
+    return entry.instance;
+  }
+
+  async dispose(): Promise<void> {
+    await this._closeClients();
+    this._config = { mcpServers: Object.create(null) };
   }
 
   private _validateServerConfig(serverName: string, config: any): MCPServerConfig {
@@ -160,25 +196,39 @@ export class MCPService {
     }
   }
 
-  async updateConfig(config: MCPConfig) {
-    logger.debug('updating config', JSON.stringify(config));
+  async updateConfig(config: MCPConfig, allowLocalDevelopment = false) {
+    logger.debug('updating MCP server configuration', Object.keys(config.mcpServers).length);
+    this._allowLocalDevelopment = allowLocalDevelopment;
     this._config = config;
     await this._createClients();
 
     return this._mcpToolsPerServer;
   }
 
+  private _createSafeMcpFetch(): typeof fetch {
+    return async (input, init) => {
+      const target = input instanceof Request ? input.url : input.toString();
+
+      if (!isSafeMcpRemoteUrl(target, this._allowLocalDevelopment)) {
+        throw new Error('MCP server destination is not allowed');
+      }
+
+      return fetch(input, { ...init, redirect: 'error' });
+    };
+  }
+
   private async _createStreamableHTTPClient(
     serverName: string,
     config: StreamableHTTPServerConfig,
   ): Promise<MCPClient> {
-    logger.debug(`Creating Streamable-HTTP client for ${serverName} with URL: ${config.url}`);
+    logger.debug(`Creating Streamable-HTTP client for ${serverName}`);
 
     const client = await experimental_createMCPClient({
       transport: new StreamableHTTPClientTransport(new URL(config.url), {
         requestInit: {
           headers: config.headers,
         },
+        fetch: this._createSafeMcpFetch(),
       }),
     });
 
@@ -186,19 +236,20 @@ export class MCPService {
   }
 
   private async _createSSEClient(serverName: string, config: SSEServerConfig): Promise<MCPClient> {
-    logger.debug(`Creating SSE client for ${serverName} with URL: ${config.url}`);
+    logger.debug(`Creating SSE client for ${serverName}`);
 
     const client = await experimental_createMCPClient({
-      transport: config,
+      transport: new SSEClientTransport(new URL(config.url), {
+        requestInit: { headers: config.headers },
+        fetch: this._createSafeMcpFetch(),
+      }),
     });
 
     return Object.assign(client, { serverName });
   }
 
   private async _createStdioClient(serverName: string, config: STDIOServerConfig): Promise<MCPClient> {
-    logger.debug(
-      `Creating STDIO client for '${serverName}' with command: '${config.command}' ${config.args?.join(' ') || ''}`,
-    );
+    logger.debug(`Creating STDIO client for ${serverName}`);
 
     const client = await experimental_createMCPClient({ transport: new Experimental_StdioMCPTransport(config) });
 
@@ -207,7 +258,7 @@ export class MCPService {
 
   private _registerTools(serverName: string, tools: ToolSet) {
     for (const [toolName, tool] of Object.entries(tools)) {
-      if (this._tools[toolName]) {
+      if (Object.hasOwn(this._tools, toolName)) {
         const existingServerName = this._toolNamesToServerNames.get(toolName);
 
         if (existingServerName && existingServerName !== serverName) {
@@ -253,8 +304,8 @@ export class MCPService {
             tools,
             config,
           };
-        } catch (error) {
-          logger.error(`Failed to get tools from server ${serverName}:`, error);
+        } catch {
+          logger.error(`Failed to get tools from server ${serverName}`);
           this._mcpToolsPerServer[serverName] = {
             status: 'unavailable',
             error: 'could not retrieve tools from server',
@@ -262,11 +313,11 @@ export class MCPService {
             config,
           };
         }
-      } catch (error) {
-        logger.error(`Failed to initialize MCP client for server: ${serverName}`, error);
+      } catch {
+        logger.error(`Failed to initialize MCP client for server: ${serverName}`);
         this._mcpToolsPerServer[serverName] = {
           status: 'unavailable',
-          error: (error as Error).message,
+          error: 'could not connect to server',
           client,
           config,
         };
@@ -277,8 +328,8 @@ export class MCPService {
   }
 
   async checkServersAvailabilities() {
-    this._tools = {};
-    this._toolsWithoutExecute = {};
+    this._tools = Object.create(null);
+    this._toolsWithoutExecute = Object.create(null);
     this._toolNamesToServerNames.clear();
 
     const checkPromises = Object.entries(this._mcpToolsPerServer).map(async ([serverName, server]) => {
@@ -302,8 +353,8 @@ export class MCPService {
             tools,
             config: server.config,
           };
-        } catch (error) {
-          logger.error(`Failed to get tools from server ${serverName}:`, error);
+        } catch {
+          logger.error(`Failed to get tools from server ${serverName}`);
           this._mcpToolsPerServer[serverName] = {
             status: 'unavailable',
             error: 'could not retrieve tools from server',
@@ -313,8 +364,8 @@ export class MCPService {
         }
 
         logger.debug(`Checking MCP server "${serverName}" availability: end`);
-      } catch (error) {
-        logger.error(`Failed to connect to server ${serverName}:`, error);
+      } catch {
+        logger.error(`Failed to connect to server ${serverName}`);
         this._mcpToolsPerServer[serverName] = {
           status: 'unavailable',
           error: 'could not connect to server',
@@ -339,20 +390,20 @@ export class MCPService {
 
       try {
         await server.client.close();
-      } catch (error) {
-        logger.error(`Error closing client for ${serverName}:`, error);
+      } catch {
+        logger.error(`Error closing client for ${serverName}`);
       }
     });
 
     await Promise.allSettled(closePromises);
-    this._tools = {};
-    this._toolsWithoutExecute = {};
-    this._mcpToolsPerServer = {};
+    this._tools = Object.create(null);
+    this._toolsWithoutExecute = Object.create(null);
+    this._mcpToolsPerServer = Object.create(null);
     this._toolNamesToServerNames.clear();
   }
 
   isValidToolName(toolName: string): boolean {
-    return toolName in this._tools;
+    return Object.hasOwn(this._tools, toolName);
   }
 
   processToolCall(toolCall: ToolCall, dataStream: DataStreamWriter): void {
@@ -403,15 +454,15 @@ export class MCPService {
           const toolInstance = this._tools[toolName];
 
           if (toolInstance && typeof toolInstance.execute === 'function') {
-            logger.debug(`calling tool "${toolName}" with args: ${JSON.stringify(toolInvocation.args)}`);
+            logger.debug(`Calling MCP tool "${toolName}"`);
 
             try {
               result = await toolInstance.execute(toolInvocation.args, {
                 messages: convertToCoreMessages(messages),
                 toolCallId,
               });
-            } catch (error) {
-              logger.error(`error while calling tool "${toolName}":`, error);
+            } catch {
+              logger.error(`Error while calling MCP tool "${toolName}"`);
               result = TOOL_EXECUTION_ERROR;
             }
           } else {

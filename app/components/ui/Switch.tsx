@@ -5,10 +5,11 @@ import { classNames } from '~/utils/classNames';
 interface SwitchProps {
   className?: string;
   checked?: boolean;
+  ariaLabel?: string;
   onCheckedChange?: (event: boolean) => void;
 }
 
-export const Switch = memo(({ className, onCheckedChange, checked }: SwitchProps) => {
+export const Switch = memo(({ className, onCheckedChange, checked, ariaLabel }: SwitchProps) => {
   return (
     <SwitchPrimitive.Root
       className={classNames(
@@ -20,6 +21,7 @@ export const Switch = memo(({ className, onCheckedChange, checked }: SwitchProps
         className,
       )}
       checked={checked}
+      aria-label={ariaLabel}
       onCheckedChange={(e) => onCheckedChange?.(e)}
     >
       <SwitchPrimitive.Thumb

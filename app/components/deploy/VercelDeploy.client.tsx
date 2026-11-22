@@ -155,9 +155,8 @@ export function useVercelDeploy() {
               }
 
               allProjectFiles[relativePath] = content;
-            } catch (error) {
-              // Skip binary files or files that can't be read as text
-              console.log(`Skipping file ${entry.name}: ${error}`);
+            } catch {
+              // Skip binary files or files that can't be read as text.
             }
           } else if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
             await getAllProjectFiles(fullPath);
@@ -193,8 +192,6 @@ export function useVercelDeploy() {
       const data = (await response.json()) as any;
 
       if (!response.ok || !data.deploy || !data.project) {
-        console.error('Invalid deploy response:', data);
-
         // Notify that deployment failed
         deployArtifact.runner.handleDeployAction('deploying', 'failed', {
           error: data.error || 'Invalid deployment response',
@@ -215,7 +212,6 @@ export function useVercelDeploy() {
 
       return true;
     } catch (err) {
-      console.error('Vercel deploy error:', err);
       toast.error(err instanceof Error ? err.message : 'Vercel deployment failed');
 
       return false;

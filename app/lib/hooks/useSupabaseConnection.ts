@@ -9,7 +9,26 @@ import {
   isFetchingApiKeys,
   updateSupabaseConnection,
   fetchProjectApiKeys,
+  fetchSupabaseStats,
 } from '~/lib/stores/supabase';
+import type { SupabaseUser } from '~/types/supabase';
+
+const CONNECTED_USER: SupabaseUser = {
+  id: '',
+  email: 'Connected',
+  role: 'Admin',
+  created_at: '',
+  last_sign_in_at: '',
+};
+
+async function postCredentialOperation(operation: 'connect' | 'disconnect', token?: string): Promise<Response> {
+  return fetch('/api/credentials', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ operation, provider: 'supabase', ...(token ? { token } : {}) }),
+    cache: 'no-store',
+  });
+}
 
 export function useSupabaseConnection() {
   const connection = useStore(supabaseConnection);
@@ -20,62 +39,77 @@ export function useSupabaseConnection() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const savedConnection = localStorage.getItem('supabase_connection');
-    const savedCredentials = localStorage.getItem('supabaseCredentials');
+    let active = true;
 
-    if (savedConnection) {
-      const parsed = JSON.parse(savedConnection);
+    const restoreConnectionStatus = async () => {
+      try {
+        const response = await fetch('/api/credentials', { cache: 'no-store' });
 
-      if (savedCredentials && !parsed.credentials) {
-        parsed.credentials = JSON.parse(savedCredentials);
+        if (!response.ok) {
+          throw new Error('Unable to read provider connection status');
+        }
+
+        const data = (await response.json()) as { providers?: Record<string, boolean> };
+
+        if (!active) {
+          return;
+        }
+
+        if (data.providers?.supabase) {
+          updateSupabaseConnection({ user: CONNECTED_USER, token: '', isConnected: true });
+          await fetchSupabaseStats();
+        } else {
+          updateSupabaseConnection({
+            user: null,
+            token: '',
+            isConnected: false,
+            stats: undefined,
+            credentials: undefined,
+          });
+        }
+      } catch {
+        if (active) {
+          updateSupabaseConnection({ user: null, token: '', isConnected: false, credentials: undefined });
+        }
       }
+    };
 
-      updateSupabaseConnection(parsed);
+    void restoreConnectionStatus();
 
-      if (parsed.token && parsed.selectedProjectId && !parsed.credentials) {
-        fetchProjectApiKeys(parsed.selectedProjectId, parsed.token).catch(console.error);
-      }
-    }
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleConnect = async () => {
+    const cleanToken = connection.token.trim();
+
+    if (!cleanToken) {
+      toast.error('Enter a Supabase access token');
+      return false;
+    }
+
     isConnecting.set(true);
 
     try {
-      const cleanToken = connection.token.trim();
-
-      const response = await fetch('/api/supabase', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: cleanToken,
-        }),
-      });
-
-      const data = (await response.json()) as any;
+      const response = await postCredentialOperation('connect', cleanToken);
+      const data = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to connect');
+        throw new Error(data.error || 'Failed to connect to Supabase');
       }
 
-      updateSupabaseConnection({
-        user: data.user,
-        token: connection.token,
-        stats: data.stats,
-      });
-
+      updateSupabaseConnection({ user: CONNECTED_USER, token: '', isConnected: true });
+      await fetchSupabaseStats();
       toast.success('Successfully connected to Supabase');
-
       setIsProjectsExpanded(true);
 
       return true;
     } catch (error) {
-      console.error('Connection error:', error);
-      logStore.logError('Failed to authenticate with Supabase', { error });
-      toast.error(error instanceof Error ? error.message : 'Failed to connect to Supabase');
-      updateSupabaseConnection({ user: null, token: '' });
+      const message = error instanceof Error ? error.message : 'Failed to connect to Supabase';
+      logStore.logError('Failed to authenticate with Supabase', { message });
+      toast.error(message);
+      updateSupabaseConnection({ user: null, token: '', isConnected: false, credentials: undefined });
 
       return false;
     } finally {
@@ -83,42 +117,58 @@ export function useSupabaseConnection() {
     }
   };
 
-  const handleDisconnect = () => {
-    updateSupabaseConnection({ user: null, token: '' });
+  const handleDisconnect = async () => {
+    try {
+      const response = await postCredentialOperation('disconnect');
+
+      if (!response.ok) {
+        throw new Error('Unable to disconnect Supabase');
+      }
+    } catch {
+      toast.error('Could not clear the secure Supabase session');
+      return;
+    }
+
+    updateSupabaseConnection({
+      user: null,
+      token: '',
+      isConnected: false,
+      stats: undefined,
+      selectedProjectId: '',
+      project: undefined,
+      credentials: undefined,
+    });
     toast.success('Disconnected from Supabase');
     setIsDropdownOpen(false);
   };
 
   const selectProject = async (projectId: string) => {
     const currentState = supabaseConnection.get();
-    let projectData = undefined;
-
-    if (projectId && currentState.stats?.projects) {
-      projectData = currentState.stats.projects.find((project) => project.id === projectId);
-    }
+    const projectData = projectId
+      ? currentState.stats?.projects?.find((project) => project.id === projectId)
+      : undefined;
 
     updateSupabaseConnection({
       selectedProjectId: projectId,
       project: projectData,
     });
 
-    if (projectId && currentState.token) {
+    if (projectId && currentState.isConnected) {
       try {
-        await fetchProjectApiKeys(projectId, currentState.token);
+        await fetchProjectApiKeys(projectId);
         toast.success('Project selected successfully');
-      } catch (error) {
-        console.error('Failed to fetch API keys:', error);
-        toast.error('Selected project but failed to fetch API keys');
+      } catch {
+        toast.error('Selected project but failed to fetch public project details');
       }
     } else {
-      toast.success('Project selected successfully');
+      toast.success('Project selection updated');
     }
 
     setIsDropdownOpen(false);
   };
 
   const handleCreateProject = async () => {
-    window.open('https://app.supabase.com/new/new-project', '_blank');
+    window.open('https://app.supabase.com/new/new-project', '_blank', 'noopener,noreferrer');
   };
 
   return {
@@ -134,14 +184,8 @@ export function useSupabaseConnection() {
     handleDisconnect,
     selectProject,
     handleCreateProject,
-    updateToken: (token: string) => updateSupabaseConnection({ ...connection, token }),
-    isConnected: !!(connection.user && connection.token),
-    fetchProjectApiKeys: (projectId: string) => {
-      if (connection.token) {
-        return fetchProjectApiKeys(projectId, connection.token);
-      }
-
-      return Promise.reject(new Error('No token available'));
-    },
+    updateToken: (token: string) => updateSupabaseConnection({ token }),
+    isConnected: !!(connection.isConnected && connection.user),
+    fetchProjectApiKeys: (projectId: string) => fetchProjectApiKeys(projectId),
   };
 }

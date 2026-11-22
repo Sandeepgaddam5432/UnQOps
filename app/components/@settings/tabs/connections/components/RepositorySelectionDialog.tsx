@@ -1,11 +1,10 @@
-import type { GitHubRepoInfo, GitHubContent, RepositoryStats, GitHubUserResponse } from '~/types/GitHub';
+import type { GitHubRepoInfo, GitHubContent, RepositoryStats } from '~/types/GitHub';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import * as Dialog from '@radix-ui/react-dialog';
 import { classNames } from '~/utils/classNames';
 import { getLocalStorage } from '~/lib/persistence';
 import { motion, AnimatePresence } from 'framer-motion';
-import Cookies from 'js-cookie';
 
 // Import UI components
 import { Input, SearchInput, Badge, FilterChip } from '~/components/ui';
@@ -61,62 +60,6 @@ export function RepositorySelectionDialog({ isOpen, onClose, onSelect }: Reposit
       fetchUserRepos();
     }
   };
-
-  // Initialize GitHub connection and fetch repositories
-  useEffect(() => {
-    const savedConnection = getLocalStorage('github_connection');
-
-    // If no connection exists but environment variables are set, create a connection
-    if (!savedConnection && import.meta.env.VITE_GITHUB_ACCESS_TOKEN) {
-      const token = import.meta.env.VITE_GITHUB_ACCESS_TOKEN;
-      const tokenType = import.meta.env.VITE_GITHUB_TOKEN_TYPE === 'fine-grained' ? 'fine-grained' : 'classic';
-
-      // Fetch GitHub user info to initialize the connection
-      fetch('https://api.github.com/user', {
-        headers: {
-          Accept: 'application/vnd.github.v3+json',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Invalid token or unauthorized');
-          }
-
-          return response.json();
-        })
-        .then((data: unknown) => {
-          const userData = data as GitHubUserResponse;
-
-          // Save connection to local storage
-          const newConnection = {
-            token,
-            tokenType,
-            user: {
-              login: userData.login,
-              avatar_url: userData.avatar_url,
-              name: userData.name || userData.login,
-            },
-            connected_at: new Date().toISOString(),
-          };
-
-          localStorage.setItem('github_connection', JSON.stringify(newConnection));
-
-          // Also save as cookies for API requests
-          Cookies.set('githubToken', token);
-          Cookies.set('githubUsername', userData.login);
-          Cookies.set('git:github.com', JSON.stringify({ username: token, password: 'x-oauth-basic' }));
-
-          // Refresh repositories after connection is established
-          if (isOpen && activeTab === 'my-repos') {
-            fetchUserRepos();
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to initialize GitHub connection from environment variables:', error);
-        });
-    }
-  }, [isOpen]);
 
   // Fetch repositories when dialog opens or tab changes
   useEffect(() => {
@@ -285,24 +228,11 @@ export function RepositorySelectionDialog({ isOpen, onClose, onSelect }: Reposit
         .split('/')
         .slice(-2);
 
-      // Try to get token from local storage first
       const connection = getLocalStorage('github_connection');
-
-      // If no connection in local storage, check environment variables
-      let headers: HeadersInit = {};
-
-      if (connection?.token) {
-        headers = {
-          Accept: 'application/vnd.github.v3+json',
-          Authorization: `Bearer ${connection.token}`,
-        };
-      } else if (import.meta.env.VITE_GITHUB_ACCESS_TOKEN) {
-        // Use token from environment variables
-        headers = {
-          Accept: 'application/vnd.github.v3+json',
-          Authorization: `Bearer ${import.meta.env.VITE_GITHUB_ACCESS_TOKEN}`,
-        };
-      }
+      const headers: HeadersInit = {
+        Accept: 'application/vnd.github.v3+json',
+        ...(connection?.token ? { Authorization: `Bearer ${connection.token}` } : {}),
+      };
 
       // First, get the repository info to determine the default branch
       const repoInfoResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {

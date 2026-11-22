@@ -2,9 +2,10 @@ import { useStore } from '@nanostores/react';
 import type { LinksFunction } from '@remix-run/cloudflare';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
 import tailwindReset from '@unocss/reset/tailwind-compat.css?url';
-import { themeStore } from './lib/stores/theme';
+import { initializeTheme, themeStore } from './lib/stores/theme';
 import { stripIndents } from './utils/stripIndent';
 import { createHead } from 'remix-island';
+import { THEME_FONTS } from './lib/theme/fonts';
 import { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -26,33 +27,71 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindReset },
   { rel: 'stylesheet', href: globalStyles },
   { rel: 'stylesheet', href: xtermStyles },
-  {
-    rel: 'preconnect',
-    href: 'https://fonts.googleapis.com',
-  },
-  {
-    rel: 'preconnect',
-    href: 'https://fonts.gstatic.com',
-    crossOrigin: 'anonymous',
-  },
-  {
-    rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-  },
 ];
 
+const serializedThemeFontRegistry = JSON.stringify(Object.fromEntries(THEME_FONTS.map(({ id, css }) => [id, css])));
+
 const inlineThemeCode = stripIndents`
-  setTutorialKitTheme();
+  (function setUnqopsTheme() {
+    const root = document.documentElement;
+    const fontRegistry = ${serializedThemeFontRegistry};
+    const defaultFonts = { heading: 'albertSans', body: 'inter', mono: 'jetBrainsMono' };
+    const allowed = {
+      mode: ['light', 'dark', 'system'],
+      preset: ['default', 'ocean', 'sunset', 'forest', 'monochrome'],
+      radius: ['sharp', 'rounded', 'pill'],
+      density: ['compact', 'comfortable', 'spacious'],
+      elevation: ['flat', 'soft', 'strong'],
+      fontScale: ['sm', 'md', 'lg'],
+    };
+    const densityScale = { compact: 0.88, comfortable: 1, spacious: 1.16 };
+    const fontScale = { sm: 0.94, md: 1, lg: 1.08 };
+    const radii = {
+      sharp: { control: '0px', field: '0px', card: '0px', box: '0px', badge: '0px' },
+      rounded: { control: '6px', field: '8px', card: '12px', box: '16px', badge: '999px' },
+      pill: { control: '999px', field: '16px', card: '24px', box: '32px', badge: '999px' },
+    };
+    let settings = {};
+    let legacyMode = null;
 
-  function setTutorialKitTheme() {
-    let theme = localStorage.getItem('bolt_theme');
-
-    if (!theme) {
-      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    try {
+      const stored = JSON.parse(localStorage.getItem('bolt_theme_preferences_v1') || '{}');
+      if (stored && typeof stored === 'object' && !Array.isArray(stored)) settings = stored;
+      legacyMode = localStorage.getItem('bolt_theme');
+    } catch {
+      settings = {};
     }
 
-    document.querySelector('html')?.setAttribute('data-theme', theme);
-  }
+    const mode = allowed.mode.includes(settings.mode)
+      ? settings.mode
+      : legacyMode === 'dark' || legacyMode === 'light' ? legacyMode : 'light';
+    const prefersDark = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = mode === 'system' ? prefersDark ? 'dark' : 'light' : mode;
+
+    root.dataset.theme = theme;
+    root.dataset.themePreset = allowed.preset.includes(settings.preset) ? settings.preset : 'default';
+    root.dataset.themeRadius = allowed.radius.includes(settings.radius) ? settings.radius : 'rounded';
+    root.dataset.themeDensity = allowed.density.includes(settings.density) ? settings.density : 'comfortable';
+    root.dataset.themeElevation = allowed.elevation.includes(settings.elevation) ? settings.elevation : 'soft';
+    root.dataset.themeMotion = settings.motion === false ? 'off' : 'on';
+    root.style.colorScheme = theme;
+
+    const density = allowed.density.includes(settings.density) ? settings.density : 'comfortable';
+    const textScale = allowed.fontScale.includes(settings.fontScale) ? settings.fontScale : 'md';
+    const radius = allowed.radius.includes(settings.radius) ? settings.radius : 'rounded';
+    root.style.setProperty('--theme-density', String(densityScale[density]));
+    root.style.setProperty('--theme-font-scale', String(fontScale[textScale]));
+    root.style.setProperty('--theme-root-scale', String(densityScale[density] * fontScale[textScale]));
+    const fontPreferences = settings.fonts && typeof settings.fonts === 'object' && !Array.isArray(settings.fonts)
+      ? settings.fonts
+      : {};
+    Object.keys(defaultFonts).forEach((role) => {
+      const candidate = fontPreferences[role];
+      const fontId = Object.prototype.hasOwnProperty.call(fontRegistry, candidate) ? candidate : defaultFonts[role];
+      root.style.setProperty('--theme-font-' + role, fontRegistry[fontId]);
+    });
+    Object.entries(radii[radius]).forEach(([name, value]) => root.style.setProperty('--theme-radius-' + name, value));
+  })();
 `;
 
 export const Head = createHead(() => (
@@ -69,7 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const theme = useStore(themeStore);
 
   useEffect(() => {
-    document.querySelector('html')?.setAttribute('data-theme', theme);
+    initializeTheme();
   }, [theme]);
 
   return (

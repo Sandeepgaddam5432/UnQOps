@@ -66,8 +66,6 @@ export default function VercelConnection() {
     toast.success('Disconnected from Vercel');
   };
 
-  console.log('connection', connection);
-
   return (
     <motion.div
       className="bg-[#FFFFFF] dark:bg-[#0A0A0A] rounded-lg border border-[#E5E5E5] dark:border-[#1A1A1A]"

@@ -32,6 +32,7 @@ function getEditorTheme(settings: EditorSettings) {
       borderLeft: 'var(--cm-cursor-width) solid var(--cm-cursor-backgroundColor)',
     },
     '.cm-scroller': {
+      fontFamily: 'var(--theme-font-mono, ui-monospace, monospace)',
       lineHeight: '1.5',
       '&:focus-visible': {
         outline: 'none',
@@ -61,7 +62,7 @@ function getEditorTheme(settings: EditorSettings) {
     },
     '.cm-gutter': {
       '&.cm-lineNumbers': {
-        fontFamily: 'Roboto Mono, monospace',
+        fontFamily: 'var(--theme-font-mono, ui-monospace, monospace)',
         fontSize: settings.gutterFontSize ?? settings.fontSize ?? '12px',
         minWidth: '40px',
       },

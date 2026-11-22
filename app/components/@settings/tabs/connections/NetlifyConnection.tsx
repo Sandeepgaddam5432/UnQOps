@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { classNames } from '~/utils/classNames';
 import { useStore } from '@nanostores/react';
-import { netlifyConnection, updateNetlifyConnection, initializeNetlifyConnection } from '~/lib/stores/netlify';
+import { netlifyConnection, updateNetlifyConnection } from '~/lib/stores/netlify';
 import type { NetlifySite, NetlifyDeploy, NetlifyBuild, NetlifyUser } from '~/types/netlify';
 import {
   CloudIcon,
@@ -138,11 +138,6 @@ export default function NetlifyConnection() {
       setIsActionLoading(false);
     }
   };
-
-  useEffect(() => {
-    // Initialize connection with environment token if available
-    initializeNetlifyConnection();
-  }, []);
 
   useEffect(() => {
     // Check if we have a connection with a token but no stats

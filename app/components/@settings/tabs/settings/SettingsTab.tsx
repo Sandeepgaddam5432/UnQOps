@@ -5,6 +5,7 @@ import { classNames } from '~/utils/classNames';
 import { Switch } from '~/components/ui/Switch';
 import type { UserProfile } from '~/components/@settings/core/types';
 import { isMac } from '~/utils/os';
+import ThemePreferencesPanel from './ThemePreferencesPanel';
 
 // Helper to get modifier key symbols/text
 const getModifierSymbol = (modifier: string): string => {
@@ -61,6 +62,8 @@ export default function SettingsTab() {
 
   return (
     <div className="space-y-4">
+      <ThemePreferencesPanel />
+
       {/* Language & Notifications */}
       <motion.div
         className="bg-white dark:bg-[#0A0A0A] rounded-lg shadow-sm dark:shadow-none p-4 space-y-4"

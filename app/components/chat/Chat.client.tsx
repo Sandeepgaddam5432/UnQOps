@@ -145,7 +145,6 @@ export const ChatImpl = memo(
     });
     const { showChat } = useStore(chatStore);
     const [animationScope, animate] = useAnimate();
-    const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
     const [chatMode, setChatMode] = useState<'discuss' | 'build'>('build');
     const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null);
     const mcpSettings = useMCPStore((state) => state.settings);
@@ -167,7 +166,6 @@ export const ChatImpl = memo(
     } = useChat({
       api: '/api/chat',
       body: {
-        apiKeys,
         files,
         promptId,
         contextOptimization: contextOptimizationEnabled,
@@ -609,14 +607,6 @@ export const ChatImpl = memo(
       [],
     );
 
-    useEffect(() => {
-      const storedApiKeys = Cookies.get('apiKeys');
-
-      if (storedApiKeys) {
-        setApiKeys(JSON.parse(storedApiKeys));
-      }
-    }, []);
-
     const handleModelChange = (newModel: string) => {
       setModel(newModel);
       Cookies.set('selectedModel', newModel, { expires: 30 });
@@ -673,7 +663,6 @@ export const ChatImpl = memo(
             },
             model,
             provider,
-            apiKeys,
           );
         }}
         uploadedFiles={uploadedFiles}

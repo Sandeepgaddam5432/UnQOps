@@ -1,92 +1,99 @@
 import { type ActionFunctionArgs } from '@remix-run/cloudflare';
-import { createScopedLogger } from '~/utils/logger';
+import {
+  isSameOriginRequest,
+  isValidProviderResourceId,
+  readJsonBody,
+  RequestBodyTooLargeError,
+} from '~/lib/api/deployment-security';
+import { CredentialStoreUnavailableError, getProviderCredential } from '~/lib/api/provider-credentials.server';
 
-const logger = createScopedLogger('api.supabase.query');
+const MAX_REQUEST_BYTES = 1_000_000;
+const MAX_QUERY_LENGTH = 250_000;
 
-export async function action({ request }: ActionFunctionArgs) {
+function json(data: unknown, status = 200): Response {
+  return Response.json(data, {
+    status,
+    headers: {
+      'Cache-Control': 'private, no-store',
+      'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
+      Vary: 'Cookie, Origin',
+    },
+  });
+}
+
+export async function action({ request, context }: ActionFunctionArgs) {
   if (request.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return json({ error: { message: 'Method not allowed' } }, 405);
   }
 
-  const authHeader = request.headers.get('Authorization');
+  if (!isSameOriginRequest(request) || request.headers.get('Sec-Fetch-Site') === 'cross-site') {
+    return json({ error: { message: 'Same-origin requests are required' } }, 403);
+  }
 
-  if (!authHeader) {
-    return new Response('No authorization token provided', { status: 401 });
+  if (request.headers.get('Content-Type')?.split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
+    return json({ error: { message: 'Content-Type must be application/json' } }, 415);
+  }
+
+  let body: unknown;
+
+  try {
+    body = await readJsonBody(request, MAX_REQUEST_BYTES);
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return json({ error: { message: 'Query request is too large' } }, 413);
+    }
+
+    return json({ error: { message: 'Invalid request body' } }, 400);
+  }
+
+  if (typeof body !== 'object' || body === null || Array.isArray(body) || Object.hasOwn(body, 'token')) {
+    return json({ error: { message: 'Invalid request body' } }, 400);
+  }
+
+  const { projectId, query } = body as { projectId?: unknown; query?: unknown };
+
+  if (
+    !isValidProviderResourceId(projectId) ||
+    typeof query !== 'string' ||
+    query.trim().length === 0 ||
+    query.length > MAX_QUERY_LENGTH
+  ) {
+    return json({ error: { message: 'A valid project ID and SQL query are required' } }, 400);
   }
 
   try {
-    const { projectId, query } = (await request.json()) as any;
-    logger.debug('Executing query:', { projectId, query });
+    const credential = await getProviderCredential(request, 'supabase', context);
 
-    const response = await fetch(`https://api.supabase.com/v1/projects/${projectId}/database/query`, {
-      method: 'POST',
-      headers: {
-        Authorization: authHeader,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorData;
-
-      try {
-        errorData = JSON.parse(errorText);
-      } catch (e) {
-        console.log(e);
-        errorData = { message: errorText };
-      }
-
-      logger.error(
-        'Supabase API error:',
-        JSON.stringify({
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-        }),
-      );
-
-      return new Response(
-        JSON.stringify({
-          error: {
-            status: response.status,
-            statusText: response.statusText,
-            message: errorData.message || errorData.error || errorText,
-            details: errorData,
-          },
-        }),
-        {
-          status: response.status,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+    if (!credential) {
+      return json({ error: { message: 'Not connected to Supabase' } }, 401);
     }
 
-    const result = await response.json();
-
-    return new Response(JSON.stringify(result), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  } catch (error) {
-    logger.error('Query execution error:', error);
-    return new Response(
-      JSON.stringify({
-        error: {
-          message: error instanceof Error ? error.message : 'Query execution failed',
-          stack: error instanceof Error ? error.stack : undefined,
-        },
-      }),
+    const response = await fetch(
+      `https://api.supabase.com/v1/projects/${encodeURIComponent(projectId)}/database/query`,
       {
-        status: 500,
+        method: 'POST',
         headers: {
+          Authorization: `Bearer ${credential.token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ query }),
       },
     );
+
+    if (!response.ok) {
+      const status = response.status >= 400 && response.status <= 599 ? response.status : 502;
+      return json({ error: { status, message: 'Supabase rejected the database query' } }, status);
+    }
+
+    const result: unknown = await response.json();
+
+    return json(result);
+  } catch (error) {
+    if (error instanceof CredentialStoreUnavailableError) {
+      return json({ error: { message: 'Secure credential storage is not configured' } }, 503);
+    }
+
+    return json({ error: { message: 'Query execution failed' } }, 502);
   }
 }

@@ -107,8 +107,6 @@ export default function GitHubConnection() {
 
   const fetchGithubUser = async (token: string) => {
     try {
-      console.log('Fetching GitHub user with token:', token.substring(0, 5) + '...');
-
       // Use server-side API endpoint instead of direct GitHub API call
       const response = await fetch(`/api/system/git-info?action=getUser`, {
         method: 'GET',
@@ -131,8 +129,6 @@ export default function GitHubConnection() {
       };
 
       const data = await response.json();
-      console.log('GitHub user API response:', data);
-
       const { user } = data as { user: GitHubUserResponse };
 
       // Validate that we received a user object
@@ -378,36 +374,6 @@ export default function GitHubConnection() {
           console.error('Error parsing saved GitHub connection:', error);
           localStorage.removeItem('github_connection');
         }
-      } else {
-        // Check for environment variable token
-        const envToken = import.meta.env.VITE_GITHUB_ACCESS_TOKEN;
-
-        if (envToken) {
-          // Check if token type is specified in environment variables
-          const envTokenType = import.meta.env.VITE_GITHUB_TOKEN_TYPE;
-          console.log('Environment token type:', envTokenType);
-
-          const tokenType =
-            envTokenType === 'classic' || envTokenType === 'fine-grained'
-              ? (envTokenType as 'classic' | 'fine-grained')
-              : 'classic';
-
-          console.log('Using token type:', tokenType);
-
-          // Update both the state and the ref
-          tokenTypeRef.current = tokenType;
-          setConnection((prev) => ({
-            ...prev,
-            tokenType,
-          }));
-
-          try {
-            // Fetch user data with the environment token
-            await fetchGithubUser(envToken);
-          } catch (error) {
-            console.error('Failed to connect with environment token:', error);
-          }
-        }
       }
 
       setIsLoading(false);
@@ -551,22 +517,11 @@ export default function GitHubConnection() {
         </div>
 
         {!connection.user && (
-          <div className="text-xs text-unqops-elements-textSecondary bg-unqops-elements-background-depth-1 dark:bg-unqops-elements-background-depth-1 p-3 rounded-lg mb-4">
-            <p className="flex items-center gap-1 mb-1">
-              <span className="i-ph:lightbulb w-3.5 h-3.5 text-unqops-elements-icon-success dark:text-unqops-elements-icon-success" />
-              <span className="font-medium">Tip:</span> You can also set the{' '}
-              <code className="px-1 py-0.5 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-2 rounded">
-                VITE_GITHUB_ACCESS_TOKEN
-              </code>{' '}
-              environment variable to connect automatically.
-            </p>
-            <p>
-              For fine-grained tokens, also set{' '}
-              <code className="px-1 py-0.5 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-2 rounded">
-                VITE_GITHUB_TOKEN_TYPE=fine-grained
-              </code>
-            </p>
-          </div>
+          <p className="mb-4 rounded-lg border border-unqops-elements-borderColor bg-unqops-elements-background-depth-1 p-3 text-xs text-unqops-elements-textSecondary">
+            Connect with a personal token here. Do not put GitHub credentials in <code>VITE_*</code> variables: Vite
+            embeds those values in the browser bundle. Use a fine-grained token with access only to the repositories and
+            permissions you need.
+          </p>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -829,7 +784,9 @@ export default function GitHubConnection() {
                       </div>
 
                       <div>
-                        <h5 className="text-sm font-medium text-unqops-elements-textPrimary mb-2">Contribution Stats</h5>
+                        <h5 className="text-sm font-medium text-unqops-elements-textPrimary mb-2">
+                          Contribution Stats
+                        </h5>
                         <div className="grid grid-cols-3 gap-4">
                           {[
                             {

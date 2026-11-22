@@ -1,9 +1,9 @@
-import type { MCPServer } from '~/lib/services/mcpService';
+import type { MCPServerSummary } from '~/lib/api/mcp-security';
 import McpStatusBadge from '~/components/@settings/tabs/mcp/McpStatusBadge';
 import McpServerListItem from '~/components/@settings/tabs/mcp/McpServerListItem';
 
 type McpServerListProps = {
-  serverEntries: [string, MCPServer][];
+  serverEntries: [string, MCPServerSummary][];
   expandedServer: string | null;
   checkingServers: boolean;
   onlyShowAvailableServers?: boolean;
@@ -52,7 +52,7 @@ export default function McpServerList({
                     <span className="text-xs text-unqops-elements-textSecondary truncate">{mcpServer.config.url}</span>
                   ) : (
                     <span className="text-xs text-unqops-elements-textSecondary truncate">
-                      {mcpServer.config.command} {mcpServer.config.args?.join(' ')}
+                      {mcpServer.config.command}
                     </span>
                   )}
                 </div>
@@ -75,7 +75,9 @@ export default function McpServerList({
             {/* Tool list */}
             {isExpanded && isAvailable && (
               <div className="mt-2">
-                <div className="text-unqops-elements-textSecondary text-xs font-medium ml-1 mb-1.5">Available Tools:</div>
+                <div className="text-unqops-elements-textSecondary text-xs font-medium ml-1 mb-1.5">
+                  Available Tools:
+                </div>
                 {serverTools.length === 0 ? (
                   <div className="ml-4 text-xs text-unqops-elements-textSecondary">No tools available</div>
                 ) : (

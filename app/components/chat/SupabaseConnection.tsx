@@ -64,16 +64,10 @@ export function SupabaseConnection() {
   }, [currentChatId, supabaseConn.selectedProjectId]);
 
   useEffect(() => {
-    if (isConnected && supabaseConn.token) {
-      fetchSupabaseStats(supabaseConn.token).catch(console.error);
+    if (isConnected && supabaseConn.selectedProjectId && !supabaseConn.credentials) {
+      fetchProjectApiKeys(supabaseConn.selectedProjectId).catch(() => undefined);
     }
-  }, [isConnected, supabaseConn.token]);
-
-  useEffect(() => {
-    if (isConnected && supabaseConn.selectedProjectId && supabaseConn.token && !supabaseConn.credentials) {
-      fetchProjectApiKeys(supabaseConn.selectedProjectId).catch(console.error);
-    }
-  }, [isConnected, supabaseConn.selectedProjectId, supabaseConn.token, supabaseConn.credentials]);
+  }, [isConnected, supabaseConn.selectedProjectId, supabaseConn.credentials]);
 
   return (
     <div className="relative">
@@ -216,7 +210,7 @@ export function SupabaseConnection() {
                       </button>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => fetchSupabaseStats(supabaseConn.token)}
+                          onClick={() => fetchSupabaseStats().catch(() => undefined)}
                           className="px-2 py-1 rounded-md text-xs bg-[#F0F0F0] dark:bg-[#252525] text-unqops-elements-textSecondary hover:bg-[#E5E5E5] dark:hover:bg-[#333333] flex items-center gap-1"
                           title="Refresh projects list"
                         >

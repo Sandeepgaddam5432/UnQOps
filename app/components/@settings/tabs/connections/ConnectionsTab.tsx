@@ -95,55 +95,19 @@ export default function ConnectionsTab() {
           </button>
 
           {isEnvVarsExpanded && (
-            <div className="mt-4">
-              <p className="text-sm text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mb-2">
-                You can configure connections using environment variables in your{' '}
-                <code className="px-1 py-0.5 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-2 rounded">
-                  .env.local
-                </code>{' '}
-                file:
+            <div className="mt-4 space-y-3 text-sm text-unqops-elements-textSecondary">
+              <p>
+                GitHub and Netlify credentials should be entered in their connection forms. Never place credentials in a{' '}
+                <code>VITE_*</code> variable: Vite exposes those values in the public browser bundle.
               </p>
-              <div className="bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-2 p-3 rounded-md text-xs font-mono overflow-x-auto">
-                <div className="text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary">
-                  # GitHub Authentication
-                </div>
-                <div className="text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
-                  VITE_GITHUB_ACCESS_TOKEN=your_token_here
-                </div>
-                <div className="text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary">
-                  # Optional: Specify token type (defaults to 'classic' if not specified)
-                </div>
-                <div className="text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
-                  VITE_GITHUB_TOKEN_TYPE=classic|fine-grained
-                </div>
-                <div className="text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary mt-2">
-                  # Netlify Authentication
-                </div>
-                <div className="text-unqops-elements-textPrimary dark:text-unqops-elements-textPrimary">
-                  VITE_NETLIFY_ACCESS_TOKEN=your_token_here
-                </div>
-              </div>
-              <div className="mt-3 text-xs text-unqops-elements-textSecondary dark:text-unqops-elements-textSecondary space-y-1">
-                <p>
-                  <span className="font-medium">Token types:</span>
-                </p>
-                <ul className="list-disc list-inside pl-2 space-y-1">
-                  <li>
-                    <span className="font-medium">classic</span> - Personal Access Token with{' '}
-                    <code className="px-1 py-0.5 bg-unqops-elements-background-depth-2 dark:bg-unqops-elements-background-depth-2 rounded">
-                      repo, read:org, read:user
-                    </code>{' '}
-                    scopes
-                  </li>
-                  <li>
-                    <span className="font-medium">fine-grained</span> - Fine-grained token with Repository and
-                    Organization access
-                  </li>
-                </ul>
-                <p className="mt-2">
-                  When set, these variables will be used automatically without requiring manual connection.
-                </p>
-              </div>
+              <p>
+                For server-side provider credentials, use local server-only configuration during development and
+                Cloudflare Pages secret bindings in production. Do not return or log secret values from server routes.
+              </p>
+              <p className="text-xs text-unqops-elements-textTertiary">
+                Personal connection tokens are stored in this browser so the editor can access your account. Use
+                short-lived, least-privilege tokens and disconnect them on shared devices.
+              </p>
             </div>
           )}
         </div>

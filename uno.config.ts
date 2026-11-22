@@ -21,7 +21,8 @@ const customIconCollection = iconPaths.reduce(
 
 const BASE_COLORS = {
   white: '#FFFFFF',
-  gray: { // Slate/Charcoal Palette
+  gray: {
+    // Slate/Charcoal Palette
     50: '#F9FAFB',
     100: '#F3F4F6',
     200: '#E5E7EB',
@@ -34,7 +35,8 @@ const BASE_COLORS = {
     900: '#111827',
     950: '#0D1117',
   },
-  accent: { // Teal Palette
+  accent: {
+    // Teal Palette
     50: '#f0fdfa',
     100: '#ccfbf1',
     200: '#99f6e4',
@@ -115,6 +117,20 @@ export default defineConfig({
   theme: {
     colors: {
       ...COLOR_PRIMITIVES,
+      accent: {
+        ...COLOR_PRIMITIVES.accent,
+        50: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 8%, white)',
+        100: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 15%, white)',
+        200: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 28%, white)',
+        300: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 43%, white)',
+        400: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 64%, white)',
+        500: 'var(--theme-accent, #14b8a6)',
+        600: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 86%, black)',
+        700: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 72%, black)',
+        800: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 58%, black)',
+        900: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 44%, black)',
+        950: 'color-mix(in srgb, var(--theme-accent, #14b8a6) 30%, black)',
+      },
       unqops: {
         elements: {
           borderColor: 'var(--unqops-elements-borderColor)',

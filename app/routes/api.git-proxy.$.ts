@@ -1,48 +1,18 @@
-import { json } from '@remix-run/cloudflare';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 
-// Allowed headers to forward to the target server
-const ALLOW_HEADERS = [
-  'accept-encoding',
-  'accept-language',
-  'accept',
-  'access-control-allow-origin',
-  'authorization',
-  'cache-control',
-  'connection',
-  'content-length',
-  'content-type',
-  'dnt',
-  'pragma',
-  'range',
-  'referer',
-  'user-agent',
-  'x-authorization',
-  'x-http-method-override',
-  'x-requested-with',
-];
-
-// Headers to expose from the target server's response
-const EXPOSE_HEADERS = [
+const ALLOWED_GIT_HOSTS = new Set(['github.com', 'gitlab.com', 'bitbucket.org']);
+const ALLOWED_METHODS = new Set(['GET', 'HEAD', 'POST']);
+const REQUEST_HEADERS = ['accept', 'authorization', 'content-length', 'content-type', 'git-protocol', 'user-agent'];
+const RESPONSE_HEADERS = [
   'accept-ranges',
-  'age',
-  'cache-control',
   'content-length',
-  'content-language',
   'content-type',
   'date',
   'etag',
   'expires',
   'last-modified',
-  'pragma',
-  'server',
-  'transfer-encoding',
-  'vary',
-  'x-github-request-id',
-  'x-redirected-url',
 ];
 
-// Handle all HTTP methods
 export async function action({ request, params }: ActionFunctionArgs) {
   return handleProxyRequest(request, params['*']);
 }
@@ -51,128 +21,214 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return handleProxyRequest(request, params['*']);
 }
 
-async function handleProxyRequest(request: Request, path: string | undefined) {
+function errorResponse(message: string, status: number): Response {
+  return Response.json(
+    { error: message },
+    {
+      status,
+      headers: {
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    },
+  );
+}
+
+function isAllowedGitEndpoint(target: URL, method: string, headers?: Headers): boolean {
+  const segments = target.pathname.split('/').filter(Boolean);
+
+  if (segments.length < 3) {
+    return false;
+  }
+
   try {
-    if (!path) {
-      return json({ error: 'Invalid proxy URL format' }, { status: 400 });
+    const decodedSegments = segments.map((segment) => decodeURIComponent(segment));
+
+    if (
+      decodedSegments.some(
+        (segment) =>
+          segment === '.' ||
+          segment === '..' ||
+          segment.includes('/') ||
+          segment.includes(String.fromCharCode(92)) ||
+          /[\u0000-\u001f\u007f]/.test(segment),
+      )
+    ) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+
+  const isUploadPackDiscovery =
+    segments.length >= 4 &&
+    segments.at(-2) === 'info' &&
+    segments.at(-1) === 'refs' &&
+    ['GET', 'HEAD'].includes(method) &&
+    [...target.searchParams].length === 1 &&
+    target.searchParams.get('service') === 'git-upload-pack';
+
+  if (isUploadPackDiscovery) {
+    return true;
+  }
+
+  const contentType = headers?.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
+
+  return (
+    method === 'POST' &&
+    segments.at(-1) === 'git-upload-pack' &&
+    segments.length >= 3 &&
+    target.search === '' &&
+    contentType === 'application/x-git-upload-pack-request'
+  );
+}
+
+function getTargetUrl(request: Request, path: string): URL | null {
+  const normalizedPath = path.replace(/^\/+/, '');
+  const slashIndex = normalizedPath.indexOf('/');
+
+  if (slashIndex < 1 || normalizedPath.includes('\\') || normalizedPath.includes('@')) {
+    return null;
+  }
+
+  const host = normalizedPath.slice(0, slashIndex).toLowerCase();
+
+  if (!ALLOWED_GIT_HOSTS.has(host)) {
+    return null;
+  }
+
+  try {
+    const target = new URL(`https://${normalizedPath}`);
+
+    if (target.protocol !== 'https:' || target.hostname !== host || target.username || target.password || target.port) {
+      return null;
     }
 
-    // Handle CORS preflight request
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-          'Access-Control-Allow-Headers': ALLOW_HEADERS.join(', '),
-          'Access-Control-Expose-Headers': EXPOSE_HEADERS.join(', '),
-          'Access-Control-Max-Age': '86400',
-        },
-      });
+    target.search = new URL(request.url).search;
+    target.hash = '';
+
+    if (!isAllowedGitEndpoint(target, request.method, request.headers)) {
+      return null;
     }
 
-    // Extract domain and remaining path
-    const parts = path.match(/([^\/]+)\/?(.*)/);
+    return target;
+  } catch {
+    return null;
+  }
+}
 
-    if (!parts) {
-      return json({ error: 'Invalid path format' }, { status: 400 });
+async function fetchWithSafeRedirects(target: URL, options: RequestInit): Promise<Response> {
+  let current = target;
+
+  for (let redirects = 0; redirects <= 3; redirects += 1) {
+    const response = await fetch(current, { ...options, redirect: 'manual' });
+
+    if (![301, 302, 303, 307, 308].includes(response.status)) {
+      return response;
     }
 
-    const domain = parts[1];
-    const remainingPath = parts[2] || '';
+    const location = response.headers.get('Location');
 
-    // Reconstruct the target URL with query parameters
-    const url = new URL(request.url);
-    const targetURL = `https://${domain}/${remainingPath}${url.search}`;
-
-    console.log('Target URL:', targetURL);
-
-    // Filter and prepare headers
-    const headers = new Headers();
-
-    // Only forward allowed headers
-    for (const header of ALLOW_HEADERS) {
-      if (request.headers.has(header)) {
-        headers.set(header, request.headers.get(header)!);
-      }
+    if (!location) {
+      return response;
     }
 
-    // Set the host header
-    headers.set('Host', domain);
+    const next = new URL(location, current);
 
-    // Set Git user agent if not already present
-    if (!headers.has('user-agent') || !headers.get('user-agent')?.startsWith('git/')) {
-      headers.set('User-Agent', 'git/@isomorphic-git/cors-proxy');
+    if (
+      next.protocol !== 'https:' ||
+      next.hostname !== target.hostname ||
+      next.username ||
+      next.password ||
+      next.port ||
+      !isAllowedGitEndpoint(next, String(options.method ?? 'GET').toUpperCase(), new Headers(options.headers))
+    ) {
+      throw new Error('Redirect target is not allowed');
     }
 
-    console.log('Request headers:', Object.fromEntries(headers.entries()));
+    current = next;
+  }
 
-    // Prepare fetch options
-    const fetchOptions: RequestInit = {
+  throw new Error('Too many upstream redirects');
+}
+
+async function handleProxyRequest(request: Request, path: string | undefined): Promise<Response> {
+  if (!path) {
+    return errorResponse('Invalid proxy path', 400);
+  }
+
+  const requestUrl = new URL(request.url);
+  const origin = request.headers.get('Origin');
+  const fetchSite = request.headers.get('Sec-Fetch-Site');
+
+  if ((origin && origin !== requestUrl.origin) || (fetchSite && fetchSite !== 'same-origin' && fetchSite !== 'none')) {
+    return errorResponse('Cross-origin proxy requests are not allowed', 403);
+  }
+
+  if (request.method === 'POST' && !origin) {
+    return errorResponse('Git upload requests must include a same-origin Origin header', 403);
+  }
+
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': requestUrl.origin,
+        'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Authorization, Content-Type, Git-Protocol',
+        'Access-Control-Max-Age': '600',
+        Vary: 'Origin',
+      },
+    });
+  }
+
+  if (!ALLOWED_METHODS.has(request.method)) {
+    return errorResponse('HTTP method is not allowed', 405);
+  }
+
+  const target = getTargetUrl(request, path);
+
+  if (!target) {
+    return errorResponse('Only Git upload-pack endpoints on HTTPS GitHub, GitLab, and Bitbucket are allowed', 403);
+  }
+
+  const headers = new Headers();
+
+  for (const header of REQUEST_HEADERS) {
+    const value = request.headers.get(header);
+
+    if (value !== null) {
+      headers.set(header, value);
+    }
+  }
+
+  try {
+    const response = await fetchWithSafeRedirects(target, {
       method: request.method,
       headers,
-      redirect: 'follow',
-    };
+      ...(request.method === 'GET' || request.method === 'HEAD' ? {} : { body: request.body, duplex: 'half' as const }),
+    });
 
-    // Add body for non-GET/HEAD requests
-    if (!['GET', 'HEAD'].includes(request.method)) {
-      fetchOptions.body = request.body;
-      fetchOptions.duplex = 'half';
+    const responseHeaders = new Headers({
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+      Vary: 'Authorization, Origin',
+    });
 
-      /*
-       * Note: duplex property is removed to ensure TypeScript compatibility
-       * across different environments and versions
-       */
-    }
+    for (const name of RESPONSE_HEADERS) {
+      const value = response.headers.get(name);
 
-    // Forward the request to the target URL
-    const response = await fetch(targetURL, fetchOptions);
-
-    console.log('Response status:', response.status);
-
-    // Create response headers
-    const responseHeaders = new Headers();
-
-    // Add CORS headers
-    responseHeaders.set('Access-Control-Allow-Origin', '*');
-    responseHeaders.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-    responseHeaders.set('Access-Control-Allow-Headers', ALLOW_HEADERS.join(', '));
-    responseHeaders.set('Access-Control-Expose-Headers', EXPOSE_HEADERS.join(', '));
-
-    // Copy exposed headers from the target response
-    for (const header of EXPOSE_HEADERS) {
-      // Skip content-length as we'll use the original response's content-length
-      if (header === 'content-length') {
-        continue;
-      }
-
-      if (response.headers.has(header)) {
-        responseHeaders.set(header, response.headers.get(header)!);
+      if (value !== null) {
+        responseHeaders.set(name, value);
       }
     }
 
-    // If the response was redirected, add the x-redirected-url header
-    if (response.redirected) {
-      responseHeaders.set('x-redirected-url', response.url);
-    }
-
-    console.log('Response headers:', Object.fromEntries(responseHeaders.entries()));
-
-    // Return the response with the target's body stream piped directly
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders,
     });
-  } catch (error) {
-    console.error('Proxy error:', error);
-    return json(
-      {
-        error: 'Proxy error',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        url: path ? `https://${path}` : 'Invalid URL',
-      },
-      { status: 500 },
-    );
+  } catch {
+    return errorResponse('Unable to reach the allowed Git provider', 502);
   }
 }

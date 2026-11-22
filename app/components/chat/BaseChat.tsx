@@ -10,8 +10,6 @@ import { Workbench } from '~/components/workbench/Workbench.client';
 import { classNames } from '~/utils/classNames';
 import { PROVIDER_LIST } from '~/utils/constants';
 import { Messages } from './Messages.client';
-import { getApiKeysFromCookies } from './APIKeyManager';
-import Cookies from 'js-cookie';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import styles from './BaseChat.module.scss';
 import { ImportButtons } from '~/components/chat/chatExportAndImport/ImportButtons';
@@ -134,12 +132,11 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
     ref,
   ) => {
     const TEXTAREA_MAX_HEIGHT = chatStarted ? 400 : 200;
-    const [apiKeys, setApiKeys] = useState<Record<string, string>>(getApiKeysFromCookies());
+    const [apiKeys, setApiKeys] = useState<Record<string, boolean>>({});
     const [modelList, setModelList] = useState<ModelInfo[]>([]);
     const [isModelSettingsCollapsed, setIsModelSettingsCollapsed] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
-    const [transcript, setTranscript] = useState('');
     const [isModelLoading, setIsModelLoading] = useState<string | undefined>('all');
     const [progressAnnotations, setProgressAnnotations] = useState<ProgressAnnotation[]>([]);
     const expoUrl = useStore(expoUrlAtom);
@@ -160,10 +157,6 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
       }
     }, [data]);
     useEffect(() => {
-      console.log(transcript);
-    }, [transcript]);
-
-    useEffect(() => {
       onStreamingChange?.(isStreaming);
     }, [isStreaming, onStreamingChange]);
 
@@ -179,8 +172,6 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
             .map((result) => result[0])
             .map((result) => result.transcript)
             .join('');
-
-          setTranscript(transcript);
 
           if (handleInputChange) {
             const syntheticEvent = {
@@ -200,56 +191,109 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
     }, []);
 
     useEffect(() => {
+      let cancelled = false;
+
       if (typeof window !== 'undefined') {
-        let parsedApiKeys: Record<string, string> | undefined = {};
-
-        try {
-          parsedApiKeys = getApiKeysFromCookies();
-          setApiKeys(parsedApiKeys);
-        } catch (error) {
-          console.error('Error loading API keys from cookies:', error);
-          Cookies.remove('apiKeys');
-        }
-
         setIsModelLoading('all');
-        fetch('/api/models')
-          .then((response) => response.json())
-          .then((data) => {
-            const typedData = data as { modelList: ModelInfo[] };
-            setModelList(typedData.modelList);
-          })
-          .catch((error) => {
-            console.error('Error fetching model list:', error);
-          })
-          .finally(() => {
-            setIsModelLoading(undefined);
-          });
+
+        const loadProviderData = async () => {
+          try {
+            // This endpoint upgrades any legacy JS-readable key cookie to HttpOnly first.
+            const keyStatusResponse = await fetch('/api/api-keys', {
+              credentials: 'same-origin',
+              cache: 'no-store',
+            });
+
+            if (keyStatusResponse.ok) {
+              const status = (await keyStatusResponse.json()) as { providers?: unknown };
+              const configuredProviders = Array.isArray(status.providers)
+                ? status.providers.filter((name): name is string => typeof name === 'string')
+                : [];
+
+              if (!cancelled) {
+                setApiKeys(Object.fromEntries(configuredProviders.map((name) => [name, true])));
+              }
+            }
+          } catch {
+            if (!cancelled) {
+              setApiKeys({});
+            }
+          }
+
+          try {
+            const response = await fetch('/api/models', { credentials: 'same-origin', cache: 'no-store' });
+
+            if (!response.ok) {
+              throw new Error('Model list request failed');
+            }
+
+            const data = (await response.json()) as { modelList: ModelInfo[] };
+
+            if (!cancelled) {
+              setModelList(data.modelList);
+            }
+          } catch {
+            // Keep the previous model list when the endpoint is temporarily unavailable.
+          } finally {
+            if (!cancelled) {
+              setIsModelLoading(undefined);
+            }
+          }
+        };
+
+        void loadProviderData();
       }
+
+      return () => {
+        cancelled = true;
+      };
     }, [providerList, provider]);
 
     const onApiKeysChange = async (providerName: string, apiKey: string) => {
-      const newApiKeys = { ...apiKeys, [providerName]: apiKey };
-      setApiKeys(newApiKeys);
-      Cookies.set('apiKeys', JSON.stringify(newApiKeys));
-
       setIsModelLoading(providerName);
 
-      let providerModels: ModelInfo[] = [];
-
       try {
-        const response = await fetch(`/api/models/${encodeURIComponent(providerName)}`);
-        const data = await response.json();
-        providerModels = (data as { modelList: ModelInfo[] }).modelList;
-      } catch (error) {
-        console.error('Error loading dynamic models for:', providerName, error);
-      }
+        const response = await fetch('/api/api-keys', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider: providerName, apiKey }),
+        });
 
-      // Only update models for the specific provider
-      setModelList((prevModels) => {
-        const otherModels = prevModels.filter((model) => model.provider !== providerName);
-        return [...otherModels, ...providerModels];
-      });
-      setIsModelLoading(undefined);
+        if (!response.ok) {
+          throw new Error('API-key update request failed');
+        }
+
+        const status = (await response.json()) as { providers?: unknown };
+        const configuredProviders = Array.isArray(status.providers)
+          ? status.providers.filter((name): name is string => typeof name === 'string')
+          : [];
+        setApiKeys(Object.fromEntries(configuredProviders.map((name) => [name, true])));
+
+        let providerModels: ModelInfo[] = [];
+
+        try {
+          const modelsResponse = await fetch(`/api/models/${encodeURIComponent(providerName)}`, {
+            credentials: 'same-origin',
+            cache: 'no-store',
+          });
+
+          if (modelsResponse.ok) {
+            const data = (await modelsResponse.json()) as { modelList: ModelInfo[] };
+            providerModels = data.modelList;
+          }
+        } catch {
+          // The key is saved even if model discovery is temporarily unavailable.
+        }
+
+        setModelList((prevModels) => [
+          ...prevModels.filter((model) => model.provider !== providerName),
+          ...providerModels,
+        ]);
+      } finally {
+        setIsModelLoading(undefined);
+      }
     };
 
     const startListening = () => {
@@ -273,7 +317,6 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
 
         if (recognition) {
           recognition.abort(); // Stop current recognition
-          setTranscript(''); // Clear transcript
           setIsListening(false);
 
           // Clear the input by triggering handleInputChange with empty value

@@ -1,10 +1,12 @@
 import { create } from 'zustand';
-import type { MCPConfig, MCPServerTools } from '~/lib/services/mcpService';
+import type { MCPConfig } from '~/lib/services/mcpService';
+import type { MCPServerToolsSummary } from '~/lib/api/mcp-security';
 
-const MCP_SETTINGS_KEY = 'mcp_settings';
+const LEGACY_MCP_SETTINGS_KEY = 'mcp_settings';
+const MCP_MAX_LLM_STEPS_KEY = 'mcp_max_llm_steps';
 const isBrowser = typeof window !== 'undefined';
 
-type MCPSettings = {
+export type MCPSettings = {
   mcpConfig: MCPConfig;
   maxLLMSteps: number;
 };
@@ -19,7 +21,7 @@ const defaultSettings = {
 type Store = {
   isInitialized: boolean;
   settings: MCPSettings;
-  serverTools: MCPServerTools;
+  serverTools: MCPServerToolsSummary;
   error: string | null;
   isUpdatingConfig: boolean;
 };
@@ -29,6 +31,36 @@ type Actions = {
   updateSettings: (settings: MCPSettings) => Promise<void>;
   checkServersAvailabilities: () => Promise<void>;
 };
+
+function normalizeMaxLLMSteps(value: unknown): number {
+  const steps = typeof value === 'number' ? value : Number(value);
+
+  return Number.isInteger(steps) && steps >= 1 && steps <= 20 ? steps : defaultSettings.maxLLMSteps;
+}
+
+function readMaxLLMSteps(): number {
+  try {
+    const savedSteps = localStorage.getItem(MCP_MAX_LLM_STEPS_KEY);
+
+    return savedSteps === null ? defaultSettings.maxLLMSteps : normalizeMaxLLMSteps(savedSteps);
+  } catch {
+    return defaultSettings.maxLLMSteps;
+  }
+}
+
+function persistMaxLLMSteps(settings: MCPSettings): void {
+  if (!isBrowser) {
+    return;
+  }
+
+  try {
+    // Remove the old full-config value, which could contain server tokens in URLs or headers.
+    localStorage.removeItem(LEGACY_MCP_SETTINGS_KEY);
+    localStorage.setItem(MCP_MAX_LLM_STEPS_KEY, String(normalizeMaxLLMSteps(settings.maxLLMSteps)));
+  } catch {
+    // MCP configuration remains usable for this page session if browser storage is unavailable.
+  }
+}
 
 export const useMCPStore = create<Store & Actions>((set, get) => ({
   isInitialized: false,
@@ -42,74 +74,72 @@ export const useMCPStore = create<Store & Actions>((set, get) => ({
     }
 
     if (isBrowser) {
-      const savedConfig = localStorage.getItem(MCP_SETTINGS_KEY);
+      const settings = { ...defaultSettings, maxLLMSteps: readMaxLLMSteps() };
 
-      if (savedConfig) {
-        try {
-          const settings = JSON.parse(savedConfig) as MCPSettings;
-          const serverTools = await updateServerConfig(settings.mcpConfig);
-          set(() => ({ settings, serverTools }));
-        } catch (error) {
-          console.error('Error parsing saved mcp config:', error);
-          set(() => ({
-            error: `Error parsing saved mcp config: ${error instanceof Error ? error.message : String(error)}`,
-          }));
-        }
-      } else {
-        localStorage.setItem(MCP_SETTINGS_KEY, JSON.stringify(defaultSettings));
+      // Remove legacy MCP config data before making any network request or state update.
+      try {
+        localStorage.removeItem(LEGACY_MCP_SETTINGS_KEY);
+      } catch {
+        // Storage is optional; no new configuration will be written to it.
+      }
+
+      set({ settings });
+
+      try {
+        await get().checkServersAvailabilities();
+      } catch {
+        set({ error: 'Failed to check MCP server status' });
       }
     }
 
-    set(() => ({ isInitialized: true }));
+    set({ isInitialized: true });
   },
   updateSettings: async (newSettings: MCPSettings) => {
     if (get().isUpdatingConfig) {
       return;
     }
 
+    const settings = { ...newSettings, maxLLMSteps: normalizeMaxLLMSteps(newSettings.maxLLMSteps) };
+
     try {
-      set(() => ({ isUpdatingConfig: true }));
+      set({ isUpdatingConfig: true, error: null });
 
-      const serverTools = await updateServerConfig(newSettings.mcpConfig);
-
-      if (isBrowser) {
-        localStorage.setItem(MCP_SETTINGS_KEY, JSON.stringify(newSettings));
-      }
-
-      set(() => ({ settings: newSettings, serverTools }));
-    } catch (error) {
-      throw error;
+      const serverTools = await updateServerConfig(settings.mcpConfig);
+      persistMaxLLMSteps(settings);
+      set({ settings, serverTools });
     } finally {
-      set(() => ({ isUpdatingConfig: false }));
+      set({ isUpdatingConfig: false });
     }
   },
   checkServersAvailabilities: async () => {
     const response = await fetch('/api/mcp-check', {
       method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store',
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      throw new Error('MCP server status request failed');
     }
 
-    const serverTools = (await response.json()) as MCPServerTools;
+    const serverTools = (await response.json()) as MCPServerToolsSummary;
 
-    set(() => ({ serverTools }));
+    set({ serverTools, error: null });
   },
 }));
 
 async function updateServerConfig(config: MCPConfig) {
   const response = await fetch('/api/mcp-update-config', {
     method: 'POST',
+    credentials: 'same-origin',
+    cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(config),
   });
 
   if (!response.ok) {
-    throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+    throw new Error('MCP configuration update failed');
   }
 
-  const data = (await response.json()) as MCPServerTools;
-
-  return data;
+  return (await response.json()) as MCPServerToolsSummary;
 }

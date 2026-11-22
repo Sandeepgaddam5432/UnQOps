@@ -61,8 +61,15 @@ export class ImportExportService {
    */
   static async exportSettings(): Promise<any> {
     try {
-      // Get all cookies
+      // Export only script-readable preferences; API keys are stored in HttpOnly cookies and exported separately.
       const allCookies = Cookies.get();
+      const sensitiveCookieNames = new Set(['apiKeys', 'githubToken', 'git:github.com', 'netlifyToken']);
+
+      for (const key of Object.keys(allCookies)) {
+        if (sensitiveCookieNames.has(key) || /(?:token|secret|credential|api.?key|password)/i.test(key)) {
+          delete allCookies[key];
+        }
+      }
 
       // Create a comprehensive settings object
       return {
@@ -79,9 +86,6 @@ export class ImportExportService {
         providers: {
           // Provider configurations from localStorage
           provider_settings: this._safeGetItem('provider_settings'),
-
-          // API keys from cookies
-          apiKeys: allCookies.apiKeys,
 
           // Selected provider and model
           selectedModel: allCookies.selectedModel,
@@ -125,12 +129,8 @@ export class ImportExportService {
           cachedPrompt: allCookies.cachedPrompt,
         },
 
-        // Connections
+        // Non-secret connection metadata only; tokens must be re-entered after import.
         connections: {
-          // Netlify connection
-          netlify_connection: this._safeGetItem('netlify_connection'),
-
-          // GitHub connections
           ...this._getGitHubConnections(allCookies),
         },
 
@@ -198,23 +198,29 @@ export class ImportExportService {
    * Import API keys from a JSON file
    * @param keys The API keys to import
    */
-  static importAPIKeys(keys: Record<string, any>): Record<string, string> {
-    // Get existing keys from cookies
-    const existingKeys = (() => {
-      const storedApiKeys = Cookies.get('apiKeys');
-      return storedApiKeys ? JSON.parse(storedApiKeys) : {};
-    })();
+  static importAPIKeys(input: unknown): Record<string, string> {
+    let keys = input;
 
-    // Validate and save each key
-    const newKeys = { ...existingKeys };
-    Object.entries(keys).forEach(([key, value]) => {
-      // Skip comment fields
-      if (key.startsWith('_')) {
-        return;
+    if (typeof keys === 'string') {
+      if (keys.trim() === '') {
+        keys = {};
+      } else {
+        try {
+          keys = JSON.parse(keys) as unknown;
+        } catch {
+          throw new Error('Invalid API keys data');
+        }
       }
+    }
 
-      // Skip base URL fields (they should be set in .env.local)
-      if (key.includes('_API_BASE_URL')) {
+    if (typeof keys !== 'object' || keys === null || Array.isArray(keys)) {
+      throw new Error('Invalid API keys data');
+    }
+
+    const importedKeys: Record<string, string> = Object.create(null);
+
+    Object.entries(keys).forEach(([key, value]) => {
+      if (key.startsWith('_') || key.includes('_API_BASE_URL')) {
         return;
       }
 
@@ -222,26 +228,14 @@ export class ImportExportService {
         throw new Error(`Invalid value for key: ${key}`);
       }
 
-      // Handle both old and new template formats
-      let normalizedKey = key;
+      const normalizedKey = key.includes('_API_KEY') ? key.replace('_API_KEY', '') : key;
 
-      // Check if this is the old format (e.g., "Anthropic_API_KEY")
-      if (key.includes('_API_KEY')) {
-        // Extract the provider name from the old format
-        normalizedKey = key.replace('_API_KEY', '');
-      }
-
-      /*
-       * Only add non-empty keys
-       * Use the normalized key in the correct format
-       * (e.g., "OpenAI", "Google", "Anthropic")
-       */
       if (value) {
-        newKeys[normalizedKey] = value;
+        importedKeys[normalizedKey] = value;
       }
     });
 
-    return newKeys;
+    return importedKeys;
   }
 
   /**
@@ -307,7 +301,7 @@ export class ImportExportService {
     const allCookies = Cookies.get();
     const cookieKeys = Object.keys(allCookies);
 
-    // Clear all cookies except those to preserve
+    // Clear all script-readable cookies except those to preserve.
     cookieKeys.forEach((key) => {
       if (!cookiesToPreserve.includes(key)) {
         try {
@@ -317,6 +311,19 @@ export class ImportExportService {
         }
       }
     });
+
+    // HttpOnly API keys cannot be cleared by JavaScript; clear them through the same-origin server route.
+    const apiKeysResponse = await fetch('/api/api-keys', {
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keys: {}, replace: true }),
+    });
+
+    if (!apiKeysResponse.ok) {
+      throw new Error('Failed to clear saved API keys');
+    }
 
     // 3. Clear all data from IndexedDB
     if (!db) {
@@ -390,8 +397,13 @@ export class ImportExportService {
         }
       }
 
-      // Import API keys and other provider cookies
-      const providerCookies = ['apiKeys', 'selectedModel', 'selectedProvider', 'providers'];
+      // Import API keys through the server so the values remain HttpOnly.
+      if (data.providers.apiKeys !== null && data.providers.apiKeys !== undefined) {
+        await this._saveApiKeys(this.importAPIKeys(data.providers.apiKeys));
+      }
+
+      // Import non-secret provider cookies in the browser.
+      const providerCookies = ['selectedModel', 'selectedProvider', 'providers'];
       providerCookies.forEach((key) => {
         if (data.providers[key]) {
           try {
@@ -448,30 +460,10 @@ export class ImportExportService {
       });
     }
 
-    // Import connections
-    if (data.connections) {
-      // Import Netlify connection
-      if (data.connections.netlify_connection) {
-        try {
-          this._safeSetItem('netlify_connection', data.connections.netlify_connection);
-        } catch (err) {
-          console.error('Error importing Netlify connection:', err);
-        }
-      }
-
-      // Import GitHub connections
-      Object.entries(data.connections).forEach(([key, value]) => {
-        if (key.startsWith('github_') && value !== null && value !== undefined) {
-          try {
-            this._safeSetItem(key, value);
-          } catch (err) {
-            console.error(`Error importing GitHub connection ${key}:`, err);
-          }
-        }
-      });
-    }
-
-    // Import debug settings
+    /*
+     * Connection credentials are intentionally omitted from exports and must be reconnected after import.
+     * Import debug settings
+     */
     if (data.debug) {
       // Import debug localStorage settings
       const debugLocalStorageKeys = [
@@ -547,37 +539,78 @@ export class ImportExportService {
      * This is a simplified version that tries to import whatever is available
      */
 
-    // Try to import settings directly
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        // Skip metadata fields
-        if (key === 'exportDate' || key === 'version' || key === 'appVersion') {
-          return;
-        }
-
-        try {
-          // Try to determine if this should be a cookie or localStorage item
-          const isCookie = [
-            'apiKeys',
-            'selectedModel',
-            'selectedProvider',
-            'providers',
-            'tabConfiguration',
-            'cachedPrompt',
-            'isDebugEnabled',
-            'eventLogs',
-          ].includes(key);
-
-          if (isCookie) {
-            this._safeSetCookie(key, value);
-          } else {
-            this._safeSetItem(key, value);
-          }
-        } catch (err) {
-          console.error(`Error importing legacy setting ${key}:`, err);
-        }
+    // Try to import settings directly, keeping API keys in HttpOnly cookies.
+    for (const [key, value] of Object.entries(data)) {
+      if (value === null || value === undefined || ['exportDate', 'version', 'appVersion'].includes(key)) {
+        continue;
       }
+
+      if (key === 'apiKeys') {
+        await this._saveApiKeys(this.importAPIKeys(value));
+        continue;
+      }
+
+      if (
+        ['github_connection', 'netlify_connection', 'supabase_connection', 'supabaseCredentials'].includes(key) ||
+        /(?:token|secret|credential|api.?key|password)/i.test(key)
+      ) {
+        continue;
+      }
+
+      try {
+        const isCookie = [
+          'selectedModel',
+          'selectedProvider',
+          'providers',
+          'tabConfiguration',
+          'cachedPrompt',
+          'isDebugEnabled',
+          'eventLogs',
+        ].includes(key);
+
+        if (isCookie) {
+          this._safeSetCookie(key, value);
+        } else {
+          this._safeSetItem(key, value);
+        }
+      } catch (err) {
+        console.error(`Error importing legacy setting ${key}:`, err);
+      }
+    }
+  }
+
+  private static async _saveApiKeys(keys: Record<string, string>): Promise<void> {
+    const response = await fetch('/api/api-keys', {
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keys }),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to import API keys');
+    }
+  }
+
+  private static _redactCredentials(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map((item) => this._redactCredentials(item));
+    }
+
+    if (typeof value !== 'object' || value === null) {
+      return value;
+    }
+
+    const sanitized: Record<string, unknown> = Object.create(null);
+
+    for (const [key, item] of Object.entries(value)) {
+      if (!/(?:token|secret|credential|api.?key|password|authorization)/i.test(key)) {
+        sanitized[key] = this._redactCredentials(item);
+      }
+    }
+
+    return sanitized;
   }
 
   /**
@@ -602,14 +635,22 @@ export class ImportExportService {
   private static _getAllLocalStorage(): Record<string, any> {
     const result: Record<string, any> = {};
 
+    const sensitiveKeys = new Set([
+      'github_connection',
+      'netlify_connection',
+      'supabase_connection',
+      'supabaseCredentials',
+      'mcp_settings',
+    ]);
+
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
 
-        if (key) {
+        if (key && !sensitiveKeys.has(key) && !/(?:token|secret|credential|api.?key)/i.test(key)) {
           try {
             const value = localStorage.getItem(key);
-            result[key] = value ? JSON.parse(value) : null;
+            result[key] = value ? this._redactCredentials(JSON.parse(value)) : null;
           } catch {
             result[key] = null;
           }
@@ -635,7 +676,7 @@ export class ImportExportService {
     localStorageKeys.forEach((key) => {
       try {
         const value = localStorage.getItem(key);
-        result[key] = value ? JSON.parse(value) : null;
+        result[key] = value ? this._redactCredentials(JSON.parse(value)) : null;
       } catch (err) {
         console.error(`Error getting GitHub connection ${key}:`, err);
         result[key] = null;
@@ -686,6 +727,10 @@ export class ImportExportService {
    * @param value The value to set
    */
   private static _safeSetCookie(key: string, value: any): void {
+    if (key === 'apiKeys') {
+      throw new Error('API keys must be stored through the server-side credential route');
+    }
+
     try {
       Cookies.set(key, typeof value === 'string' ? value : JSON.stringify(value), { expires: 365 });
     } catch (err) {

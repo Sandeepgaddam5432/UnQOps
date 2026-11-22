@@ -154,7 +154,6 @@ export const Markdown = memo(
                       ] as any,
                       role: 'user',
                     });
-                    console.log('Message appended:', message);
                   } else if (type === 'implement' && append && setChatMode) {
                     setChatMode('build');
                     append({

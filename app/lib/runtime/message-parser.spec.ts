@@ -22,6 +22,19 @@ describe('StreamingMessageParser', () => {
     expect(parser.parse('test_id', 'Hello <strong>world</strong>!')).toBe('Hello <strong>world</strong>!');
   });
 
+  it('buffers an incomplete quick-actions container until the streamed block is complete', () => {
+    const parser = new StreamingMessageParser();
+    const prefix = 'Intro <unqops-quick-actions>';
+    expect(parser.parse('quick-actions', prefix)).toBe('Intro ');
+
+    const complete = `${prefix}<unqops-quick-action type="prompt" message="Hi">Try</unqops-quick-action></unqops-quick-actions> after`;
+    const output = parser.parse('quick-actions', complete);
+
+    expect(output).toContain('data-message="Hi"');
+    expect(output).toContain('>Try</button>');
+    expect(output.endsWith(' after')).toBe(true);
+  });
+
   describe('no artifacts', () => {
     it.each<[string | string[], ExpectedResult | string]>([
       ['Foo bar', 'Foo bar'],

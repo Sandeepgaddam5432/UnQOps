@@ -102,7 +102,6 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
 
     try {
       setIsFetchingRepos(true);
-      console.log('Fetching GitHub repositories with token:', token.substring(0, 5) + '...');
 
       // Fetch ALL repos by paginating through all pages
       let allRepos: GitHubRepo[] = [];
@@ -123,10 +122,8 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
 
           try {
             errorData = await response.json();
-            console.error('Error response data:', errorData);
-          } catch (e) {
+          } catch {
             errorData = { message: 'Could not parse error response' };
-            console.error('Could not parse error response:', e);
           }
 
           if (response.status === 401) {
@@ -148,7 +145,6 @@ export function PushToGitHubDialog({ isOpen, onClose, onPush }: PushToGitHubDial
             logStore.logError('Failed to fetch GitHub repositories', {
               status: response.status,
               statusText: response.statusText,
-              error: errorData,
             });
             toast.error(`Failed to fetch repositories: ${errorData.message || response.statusText}`);
           }

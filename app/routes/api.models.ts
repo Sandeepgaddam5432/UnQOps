@@ -82,9 +82,18 @@ export async function loader({
     });
   }
 
-  return json<ModelsResponse>({
-    modelList,
-    providers,
-    defaultProvider,
-  });
+  return json<ModelsResponse>(
+    {
+      modelList,
+      providers,
+      defaultProvider,
+    },
+    {
+      headers: {
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+        Vary: 'Cookie',
+      },
+    },
+  );
 }
