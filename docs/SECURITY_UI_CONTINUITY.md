@@ -1,6 +1,6 @@
 # UnQOps Security Hardening and UI Refresh — Continuity Notes
 
-> **Status: in progress; not plan-complete.** The user explicitly authorized pushing the active branch as an intermediate checkpoint. This does not indicate that the broader plan or its gates are complete. Keep this file current and do not record credential values here.
+> **Status: in progress; not plan-complete.** The user explicitly authorized an intermediate push of the active branch. Implementation checkpoint `5fc6245` is pushed to `arena/6954c9ee-unqops`; this does not indicate that the broader plan or its gates are complete. Never push to `main`. Keep this file current and do not record credential values here.
 
 **Last updated:** 2026-11-21 (UTC)
 
@@ -8,7 +8,7 @@
 
 **Branch base:** `b404698a59e7524ef83a4e49d940e5fda13f0877` (`main`)
 
-**GitHub operation instruction:** Work only on this active branch. The user's latest explicit instruction authorizes pushing this branch now as an intermediate checkpoint, even though the plan is incomplete. Do not push to `main` or any other branch/repository.
+**GitHub operation instruction:** Work only on this active branch. The user's latest explicit instruction authorized an intermediate push; implementation commit `5fc6245` is now pushed here. The plan remains incomplete. Do not push to `main` or any other branch/repository.
 
 ## User's standing request
 
@@ -125,11 +125,12 @@ The stateless encrypted-cookie model is implemented as a foundation and used by 
 - **Supabase / preview:** `SupabaseAlert.tsx` posts SQL to `/api/supabase/query`. Vite's `allowedHosts` now permits `.e2b.app`; after the production build, the dev server was restarted on port 5173 (`0.0.0.0`) and the Arena preview Host header returned HTTP 200 (417,066 bytes).
 - **Formatting / diff check:** Prettier checks passed for the modified diagnostics/API files and both continuity documents; `git diff --check` passed.
 - **Unverified QA:** no browser visual/accessibility review, real GitHub/Netlify/Vercel connection check, live Cloudflare API call/deployment, or DNS-answer pinning has been performed.
-- **Working tree:** large uncommitted change set; `.env.production` has a staged index deletion and an ignored local copy may remain. No commit or push has been made.
+- **GitHub checkpoint:** implementation commit `5fc6245` (`Harden provider sessions and refresh Foundry UI`) was pushed to `arena/6954c9ee-unqops` only; `main` was not pushed. The user requested an intermediate branch checkpoint even though the plan remains incomplete.
+- **Working tree / sensitive-file note:** `.env.production` was removed from the branch tip in that commit; its content may remain in parent Git history, deployed copies, or backups. An ignored local copy may remain. Rotate exposed credentials; do not treat index removal as history scrubbing.
 
 ## Suggested next steps
 
-1. Continue stage-by-stage from [`FOUNDRY_REDESIGN_PLAN.md`](./FOUNDRY_REDESIGN_PLAN.md); keep this status file current and preserve the current uncommitted branch state.
+1. Continue stage-by-stage from [`FOUNDRY_REDESIGN_PLAN.md`](./FOUNDRY_REDESIGN_PLAN.md); keep this status file current and continue only on the active branch.
 2. Migrate GitHub, Netlify, and Vercel connection/deployment/Git flows to the encrypted credential session. Diagnostics is migrated, but provider UI, stores, and direct calls still expose or submit tokens.
 3. Implement DNS-safe MCP egress or a transport with real address verification and pinning; do not claim complete DNS-rebinding protection without enforceable controls.
 4. Implement Cloudflare Pages connection/deployment integration with mocked-fetch tests; keep live Cloudflare deployment marked **UNVERIFIED** unless authorized credentials are actually used.
